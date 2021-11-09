@@ -21,7 +21,8 @@ defmodule Xairo.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:rustler, "~> 0.22.2"}
+      {:rustler, "~> 0.22.2"},
+      {:ex_png, "~> 1.0.0"}
     ]
   end
 end
