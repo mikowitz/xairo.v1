@@ -1,8 +1,7 @@
 defmodule XairoTest do
   use ExUnit.Case
-  doctest Xairo
 
-  test "greets the world" do
-    assert Xairo.hello() == :world
+  test "NIF connection" do
+    assert Xairo.Native.add(1, 2) == 3
   end
 end
