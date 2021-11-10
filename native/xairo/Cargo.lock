@@ -511,4 +511,5 @@ dependencies = [
  "cairo-rs",
  "png",
  "rustler",
+ "rustler_codegen",
 ]

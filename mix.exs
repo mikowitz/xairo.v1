@@ -21,8 +21,10 @@ defmodule Xairo.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:rustler, "~> 0.22.2"},
-      {:ex_png, "~> 1.0.0"}
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:ex_png, "~> 1.0.0"},
+      {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:rustler, "~> 0.22.2"}
     ]
   end
 end

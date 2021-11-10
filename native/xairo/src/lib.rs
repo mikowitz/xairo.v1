@@ -1,34 +1,43 @@
-use rustler::{Atom, Env, ResourceArc, Term};
+#[macro_use]
+extern crate rustler_codegen;
+use rustler::{Env, Term};
 
 mod xairo_image;
-use xairo_image::XairoImage;
+use xairo_image::{ImageArc, XairoImage, XairoResult};
+mod point;
+use point::Point;
 
 mod atoms;
 
-
-type ImageArc = ResourceArc<XairoImage>;
-
 #[rustler::nif]
-fn new_image(width: i32, height: i32) -> Result<ImageArc, Atom> {
-    match XairoImage::new(width, height) {
-        Ok(image) => Ok(ResourceArc::new(image)),
-        Err(err) => Err(err)
-    }
+fn move_to(image: ImageArc, point: Point) -> XairoResult {
+    image.context.move_to(point.x, point.y);
+    Ok(image)
 }
 
 #[rustler::nif]
-fn save_image(image: ImageArc, filename: String) -> Result<ImageArc, Atom> {
-    match image.save(filename) {
-        Ok(_) => Ok(image),
-        Err(err) => Err(err)
+fn line_to(image: ImageArc, point: Point) -> XairoResult {
+    image.context.line_to(point.x, point.y);
+    Ok(image)
+}
+
+#[rustler::nif]
+fn stroke(image: ImageArc) -> XairoResult {
+    if let Ok(_) = image.context.stroke() {
+        Ok(image)
+    } else {
+        Err(atoms::system::badarg())
     }
 }
 
 rustler::init!(
     "Elixir.Xairo.Native",
     [
-        new_image,
-        save_image,
+        xairo_image::new_image,
+        xairo_image::save_image,
+        move_to,
+        line_to,
+        stroke,
     ],
     load=on_load
 );
