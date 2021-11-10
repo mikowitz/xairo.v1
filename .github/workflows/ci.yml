@@ -26,25 +26,26 @@ jobs:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
       - uses: actions/cache@v2
-        id: mix-cache
+        id: cache
         with:
           path: |
             deps
             _build
             native/xairo/.cargo/
-            priv/native/libxairo.so
-          key: ${{ runner.os }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}-${{ hashFiles(format('{0}{1}', github.workspace, '/native/xairo/Cargo.lock')) }}
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}-${{ hashFiles('**/priv/native/libxairo.so') }}
           restore-keys: |
             ${{ runner.os }}-mix-
       - name: mix install
-        if: steps.mix-cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           mix local.rebar --force
           mix local.hex --force
           mix deps.get
           mix deps.compile
-      - name: mix compile
-        if: steps.mix-cache.outputs.cache-hit != 'true'
-        run: mix compile
+          mix compile
       - name: mix test
         run: mix test

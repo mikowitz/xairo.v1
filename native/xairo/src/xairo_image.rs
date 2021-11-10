@@ -1,5 +1,5 @@
 use cairo::{Context, Format, ImageSurface};
-use rustler::Atom;
+use rustler::{Atom, ResourceArc};
 use crate::atoms::system;
 use std::fs::File;
 
@@ -36,3 +36,23 @@ impl XairoImage {
 
 unsafe impl Send for XairoImage { }
 unsafe impl Sync for XairoImage { }
+
+pub type ImageArc = ResourceArc<XairoImage>;
+pub type XairoResult = Result<ImageArc, Atom>;
+
+#[rustler::nif]
+pub fn new_image(width: i32, height: i32) -> XairoResult {
+    match XairoImage::new(width, height) {
+        Ok(image) => Ok(ResourceArc::new(image)),
+        Err(err) => Err(err)
+    }
+}
+
+#[rustler::nif]
+pub fn save_image(image: ImageArc, filename: String) -> XairoResult {
+    match image.save(filename) {
+        Ok(_) => Ok(image),
+        Err(err) => Err(err)
+    }
+}
+
