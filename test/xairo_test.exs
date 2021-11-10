@@ -1,15 +1,26 @@
 defmodule XairoTest do
   use ExUnit.Case
 
-  alias Xairo.Point
+  alias Xairo.{Image, Point}
 
   test "can create and save an empty image" do
-    image = Xairo.new_image(100, 100)
-    assert is_reference(image)
+    image = %Image{} = Xairo.new_image(100, 100)
 
     Xairo.save_image(image, "test.png")
 
     assert_images_equal("test.png", "test/images/empty.png")
+
+    :ok = File.rm("test.png")
+  end
+
+  test "creates a scaled image" do
+    Xairo.new_image(100, 100, 2)
+    |> Xairo.move_to(10, 10)
+    |> Xairo.line_to(90, 90)
+    |> Xairo.stroke()
+    |> Xairo.save_image("test.png")
+
+    assert_images_equal("test.png", "test/images/scaled.png")
 
     :ok = File.rm("test.png")
   end

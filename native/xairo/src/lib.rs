@@ -35,6 +35,8 @@ rustler::init!(
     [
         xairo_image::new_image,
         xairo_image::save_image,
+        xairo_image::scale,
+
         move_to,
         line_to,
         stroke,
