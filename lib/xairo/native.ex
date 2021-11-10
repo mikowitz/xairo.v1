@@ -5,6 +5,7 @@ defmodule Xairo.Native do
 
   def new_image(_w, _h), do: error()
   def save_image(_i, _f), do: error()
+  def scale(_i, _sx, _sy), do: error()
 
   def move_to(_i, _p), do: error()
   def line_to(_i, _p), do: error()

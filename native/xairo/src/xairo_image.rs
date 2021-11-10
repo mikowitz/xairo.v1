@@ -32,6 +32,11 @@ impl XairoImage {
             Err(system::file_creation_error())
         }
     }
+
+    pub fn scale(self: &Self, sx: f64, sy: f64) -> &Self {
+        self.context.scale(sx, sy);
+        self
+    }
 }
 
 unsafe impl Send for XairoImage { }
@@ -55,4 +60,11 @@ pub fn save_image(image: ImageArc, filename: String) -> XairoResult {
         Err(err) => Err(err)
     }
 }
+
+#[rustler::nif]
+pub fn scale(image: ImageArc, sx: f64, sy: f64) -> XairoResult {
+    image.scale(sx, sy);
+    Ok(image)
+}
+
 
