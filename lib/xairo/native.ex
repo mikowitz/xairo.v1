@@ -15,5 +15,10 @@ defmodule Xairo.Native do
   def fill(_i), do: error()
   def close_path(_i), do: error()
 
+  def set_line_width(_i, _w), do: error()
+  def set_line_cap(_i, _lc), do: error()
+  def set_line_join(_i, _lj), do: error()
+  def set_dash(_i, _d), do: error()
+
   defp error, do: :erlang.nif_error(:nif_not_loaded)
 end

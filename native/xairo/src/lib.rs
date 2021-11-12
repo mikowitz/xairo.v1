@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate rustler_codegen;
-use rustler::{Env, Term};
+use rustler::{Atom, Env, Term};
 
 mod xairo_image;
 use xairo_image::{ImageArc, XairoImage, XairoResult};
@@ -10,7 +10,12 @@ use point::Point;
 mod rgba;
 use rgba::RGBA;
 
+mod dashes;
+use dashes::Dashes;
+
 mod atoms;
+mod line_caps;
+mod line_joins;
 
 #[rustler::nif]
 fn move_to(image: ImageArc, point: Point) -> XairoResult {
@@ -68,6 +73,38 @@ fn set_color(image: ImageArc, rgba: RGBA) -> XairoResult {
     Ok(image)
 }
 
+#[rustler::nif]
+fn set_line_width(image: ImageArc, line_width: f64) -> XairoResult {
+    image.context.set_line_width(line_width);
+    Ok(image)
+}
+
+#[rustler::nif]
+fn set_line_cap(image: ImageArc, line_cap: Atom) -> XairoResult {
+    if let Ok(line_cap) = line_caps::match_line_cap(line_cap) {
+        image.context.set_line_cap(line_cap);
+        Ok(image)
+    } else {
+        Err(atoms::system::badarg())
+    }
+}
+
+#[rustler::nif]
+fn set_line_join(image: ImageArc, line_join: Atom) -> XairoResult {
+    if let Ok(line_join) = line_joins::match_line_join(line_join) {
+        image.context.set_line_join(line_join);
+        Ok(image)
+    } else {
+        Err(atoms::system::badarg())
+    }
+}
+
+#[rustler::nif]
+fn set_dash(image: ImageArc, dashes: Dashes) -> XairoResult {
+    image.context.set_dash(&dashes.dashes, dashes.offset);
+    Ok(image)
+}
+
 rustler::init!(
     "Elixir.Xairo.Native",
     [
@@ -82,6 +119,10 @@ rustler::init!(
         fill,
         paint,
         close_path,
+        set_line_width,
+        set_line_cap,
+        set_line_join,
+        set_dash,
     ],
     load=on_load
 );
