@@ -7,7 +7,8 @@ defmodule Xairo.MixProject do
       version: "0.1.0",
       elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      elixirc_paths: compiler_paths(Mix.env())
     ]
   end
 
@@ -26,4 +27,7 @@ defmodule Xairo.MixProject do
       {:rustler, "~> 0.22.2"}
     ]
   end
+
+  defp compiler_paths(:test), do: ["test/helpers"] ++ compiler_paths(:prod)
+  defp compiler_paths(_), do: ["lib"]
 end

@@ -3,7 +3,7 @@ defmodule Xairo do
   API functions for using the cairo graphics library in Elixir.
   """
 
-  alias Xairo.{Image, Native, Point, RGBA}
+  alias Xairo.{Dashes, Image, Native, Point, RGBA}
 
   def new_image(width, height, scale \\ 1.0) do
     with {:ok, image} <- Image.new(width, height, scale), do: image
@@ -49,6 +49,28 @@ defmodule Xairo do
 
   def set_color(%Image{} = image, %RGBA{} = rgba) do
     with {:ok, _} <- Native.set_color(image.resource, rgba), do: image
+  end
+
+  def set_line_width(%Image{} = image, line_width) do
+    with {:ok, _} <- Native.set_line_width(image.resource, line_width * 1.0), do: image
+  end
+
+  def set_line_cap(%Image{} = image, line_cap) do
+    with {:ok, _} <- Native.set_line_cap(image.resource, line_cap), do: image
+  end
+
+  def set_line_join(%Image{} = image, line_join) when is_atom(line_join) do
+    with {:ok, _} <- Native.set_line_join(image.resource, line_join), do: image
+  end
+
+  def set_dash(%Image{} = image, dashes, offset) do
+    with %Dashes{} = dashes <- Dashes.new(dashes, offset) do
+      set_dash(image, dashes)
+    end
+  end
+
+  def set_dash(%Image{} = image, %Dashes{} = dashes) do
+    with {:ok, _} <- Native.set_dash(image.resource, dashes), do: image
   end
 
   def close_path(%Image{} = image) do

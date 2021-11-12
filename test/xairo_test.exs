@@ -1,7 +1,8 @@
 defmodule XairoTest do
   use ExUnit.Case
+  import Xairo.Helpers.ImageHelpers
 
-  alias Xairo.{Image, Point}
+  alias Xairo.{Dashes, Point}
 
   setup do
     on_exit(fn ->
@@ -10,11 +11,8 @@ defmodule XairoTest do
   end
 
   test "can create and save an empty image" do
-    image = %Image{} = Xairo.new_image(100, 100)
-
-    Xairo.save_image(image, "test.png")
-
-    assert_images_equal("test.png", "test/images/empty.png")
+    Xairo.new_image(100, 100)
+    |> assert_image("empty.png")
   end
 
   test "creates a scaled image" do
@@ -22,9 +20,7 @@ defmodule XairoTest do
     |> Xairo.move_to(10, 10)
     |> Xairo.line_to(90, 90)
     |> Xairo.stroke()
-    |> Xairo.save_image("test.png")
-
-    assert_images_equal("test.png", "test/images/scaled.png")
+    |> assert_image("scaled.png")
   end
 
   test "can draw on an image" do
@@ -32,9 +28,7 @@ defmodule XairoTest do
     |> Xairo.move_to(10, 10)
     |> Xairo.line_to(90, 90)
     |> Xairo.stroke()
-    |> Xairo.save_image("test.png")
-
-    assert_images_equal("test.png", "test/images/diagonal.png")
+    |> assert_image("diagonal.png")
   end
 
   test "can draw on an image using points" do
@@ -42,9 +36,7 @@ defmodule XairoTest do
     |> Xairo.move_to(Point.new(10, 10))
     |> Xairo.line_to(Point.new(90, 90))
     |> Xairo.stroke()
-    |> Xairo.save_image("test.png")
-
-    assert_images_equal("test.png", "test/images/diagonal.png")
+    |> assert_image("diagonal.png")
   end
 
   test "colors" do
@@ -62,23 +54,97 @@ defmodule XairoTest do
     |> Xairo.close_path()
     |> Xairo.set_color(0, 1, 0, 0.4)
     |> Xairo.fill()
-    |> Xairo.save_image("test.png")
-
-    assert_images_equal("test.png", "test/images/colors.png")
+    |> assert_image("colors.png")
   end
 
-  def assert_images_equal(actual_path, expected_path) do
-    actual = hash(actual_path)
-    expected = hash(expected_path)
+  test "line_caps" do
+    image =
+      Xairo.new_image(100, 100, 2.0)
+      |> Xairo.set_color(1, 1, 1)
+      |> Xairo.paint()
+      |> Xairo.set_color(0.5, 0, 1)
+      |> Xairo.set_line_width(5)
 
-    assert actual == expected
+    image =
+      image
+      |> Xairo.move_to(10, 10)
+      |> Xairo.line_to(90, 10)
+      |> Xairo.stroke()
+
+    line_caps = [{:butt, 35}, {:square, 60}, {:round, 85}]
+    image =
+      Enum.reduce(line_caps, image, fn {type, y}, image ->
+        image
+        |> Xairo.set_line_cap(type)
+        |> Xairo.move_to(10, y)
+        |> Xairo.line_to(90, y)
+        |> Xairo.stroke()
+      end)
+
+    assert_image(image, "line_caps.png")
   end
 
-  defp hash(file) do
-    initial_state = :crypto.hash_init(:sha256)
+  test "line_joins" do
+    image =
+      Xairo.new_image(100, 100, 4.0)
+      |> Xairo.set_color(1, 1, 1)
+      |> Xairo.paint()
+      |> Xairo.set_color(0.5, 0, 1)
+      |> Xairo.set_line_width(5)
 
-    File.stream!(file, [], 2048)
-    |> Enum.reduce(initial_state, &:crypto.hash_update(&2, &1))
-    |> :crypto.hash_final()
+    image =
+      image
+      |> Xairo.move_to(10, 10)
+      |> Xairo.line_to(40, 10)
+      |> Xairo.line_to(40, 40)
+      |> Xairo.line_to(10, 40)
+      |> Xairo.close_path()
+      |> Xairo.stroke()
+
+    line_joins = [{:round, {60, 10}}, {:bevel, {10, 60}}, {:miter, {60, 60}}]
+
+    image =
+      Enum.reduce(line_joins, image, fn {type, {x, y}}, image ->
+        image
+        |> Xairo.set_line_join(type)
+        |> Xairo.move_to(x, y)
+        |> Xairo.line_to(x + 30, y)
+        |> Xairo.line_to(x + 30, y + 30)
+        |> Xairo.line_to(x, y + 30)
+        |> Xairo.close_path()
+        |> Xairo.stroke()
+      end)
+
+    assert_image(image, "line_joins.png")
+  end
+
+  test "dashes" do
+    image =
+      Xairo.new_image(100, 100, 2.0)
+      |> Xairo.set_color(1, 1, 1)
+      |> Xairo.paint()
+      |> Xairo.set_color(0.5, 0, 1)
+      |> Xairo.set_line_width(1)
+
+    dashes = [
+      {[5, 1,2, 1], 0, 10},
+      {[1,1,2,1,3], 0, 30},
+      {[1,2,3,2], 1, 50},
+      {[1,2,3,4], 0, 70},
+      {[1,2,1,5], 0, 90}
+    ]
+
+
+    image = Enum.reduce(dashes, image, fn {dashes, offset, y}, image ->
+      dashes = Dashes.new(dashes, offset)
+      image
+      |> Xairo.set_dash(dashes)
+      |> Xairo.move_to(10, y)
+      |> Xairo.line_to(90, y)
+      |> Xairo.stroke()
+    end)
+
+
+    assert_image(image, "dashes.png")
   end
 end
