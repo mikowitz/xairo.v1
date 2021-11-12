@@ -17,16 +17,16 @@ defmodule XairoTest do
 
   test "creates a scaled image" do
     Xairo.new_image(100, 100, 2)
-    |> Xairo.move_to(10, 10)
-    |> Xairo.line_to(90, 90)
+    |> Xairo.move_to({10, 10})
+    |> Xairo.line_to({90, 90})
     |> Xairo.stroke()
     |> assert_image("scaled.png")
   end
 
   test "can draw on an image" do
     Xairo.new_image(100, 100)
-    |> Xairo.move_to(10, 10)
-    |> Xairo.line_to(90, 90)
+    |> Xairo.move_to({10, 10})
+    |> Xairo.line_to({90, 90})
     |> Xairo.stroke()
     |> assert_image("diagonal.png")
   end
@@ -43,14 +43,14 @@ defmodule XairoTest do
     Xairo.new_image(100, 100)
     |> Xairo.set_color(0.5, 0, 1)
     |> Xairo.paint()
-    |> Xairo.move_to(10, 10)
-    |> Xairo.line_to(90, 90)
+    |> Xairo.move_to({10, 10})
+    |> Xairo.line_to({90, 90})
     |> Xairo.set_color(0, 1, 1)
     |> Xairo.stroke()
-    |> Xairo.move_to(60, 10)
-    |> Xairo.line_to(60, 40)
-    |> Xairo.line_to(90, 40)
-    |> Xairo.line_to(90, 10)
+    |> Xairo.move_to({60, 10})
+    |> Xairo.line_to({60, 40})
+    |> Xairo.line_to({90, 40})
+    |> Xairo.line_to({90, 10})
     |> Xairo.close_path()
     |> Xairo.set_color(0, 1, 0, 0.4)
     |> Xairo.fill()
@@ -67,8 +67,8 @@ defmodule XairoTest do
 
     image =
       image
-      |> Xairo.move_to(10, 10)
-      |> Xairo.line_to(90, 10)
+      |> Xairo.move_to({10, 10})
+      |> Xairo.line_to({90, 10})
       |> Xairo.stroke()
 
     line_caps = [{:butt, 35}, {:square, 60}, {:round, 85}]
@@ -76,8 +76,8 @@ defmodule XairoTest do
       Enum.reduce(line_caps, image, fn {type, y}, image ->
         image
         |> Xairo.set_line_cap(type)
-        |> Xairo.move_to(10, y)
-        |> Xairo.line_to(90, y)
+        |> Xairo.move_to({10, y})
+        |> Xairo.line_to({90, y})
         |> Xairo.stroke()
       end)
 
@@ -94,10 +94,10 @@ defmodule XairoTest do
 
     image =
       image
-      |> Xairo.move_to(10, 10)
-      |> Xairo.line_to(40, 10)
-      |> Xairo.line_to(40, 40)
-      |> Xairo.line_to(10, 40)
+      |> Xairo.move_to({10, 10})
+      |> Xairo.line_to({40, 10})
+      |> Xairo.line_to({40, 40})
+      |> Xairo.line_to({10, 40})
       |> Xairo.close_path()
       |> Xairo.stroke()
 
@@ -107,10 +107,10 @@ defmodule XairoTest do
       Enum.reduce(line_joins, image, fn {type, {x, y}}, image ->
         image
         |> Xairo.set_line_join(type)
-        |> Xairo.move_to(x, y)
-        |> Xairo.line_to(x + 30, y)
-        |> Xairo.line_to(x + 30, y + 30)
-        |> Xairo.line_to(x, y + 30)
+        |> Xairo.move_to({x, y})
+        |> Xairo.line_to({x + 30, y})
+        |> Xairo.line_to({x + 30, y + 30})
+        |> Xairo.line_to({x, y + 30})
         |> Xairo.close_path()
         |> Xairo.stroke()
       end)
@@ -139,12 +139,53 @@ defmodule XairoTest do
       dashes = Dashes.new(dashes, offset)
       image
       |> Xairo.set_dash(dashes)
-      |> Xairo.move_to(10, y)
-      |> Xairo.line_to(90, y)
+      |> Xairo.move_to({10, y})
+      |> Xairo.line_to({90, y})
       |> Xairo.stroke()
     end)
 
 
     assert_image(image, "dashes.png")
+  end
+
+  test "relative move_to and line_to" do
+    Xairo.new_image(100, 100, 2.0)
+    |> Xairo.set_color(1, 1, 1)
+    |> Xairo.paint()
+    |> Xairo.set_color(0.5, 0, 1)
+    |> Xairo.move_to({10, 10})
+    |> Xairo.rel_line_to(40, 40)
+    |> Xairo.rel_move_to(20, 0)
+    |> Xairo.line_to({90, 90})
+    |> Xairo.stroke()
+    |> assert_image("relative.png")
+  end
+
+  test "arcs" do
+    Xairo.new_image(100, 100, 2.0)
+    |> Xairo.set_color(1, 1, 1)
+    |> Xairo.paint()
+    |> Xairo.set_color(0.5, 0, 1)
+    |> Xairo.arc({50, 50}, 40, 0, :math.pi/2)
+    |> Xairo.stroke()
+    |> Xairo.arc(Point.new(50, 50), 30, -:math.pi/2, :math.pi/2)
+    |> Xairo.stroke()
+    |> Xairo.arc_negative({50, 50}, 20, -:math.pi/2, :math.pi/2)
+    |> Xairo.stroke()
+    |> assert_image("arcs.png")
+  end
+
+  test "curves" do
+    Xairo.new_image(100, 100, 2.0)
+    |> Xairo.set_color(1, 1, 1)
+    |> Xairo.paint()
+    |> Xairo.set_color(0.5, 0, 1)
+    |> Xairo.move_to({10, 10})
+    |> Xairo.curve_to({80, 20}, {90, 80}, {80, 90})
+    |> Xairo.stroke()
+    |> Xairo.move_to(Point.new(20, 20))
+    |> Xairo.rel_curve_to(20, -20, 50, 50, -10, 70)
+    |> Xairo.stroke()
+    |> assert_image("curves.png")
   end
 end

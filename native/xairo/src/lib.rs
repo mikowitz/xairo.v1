@@ -13,6 +13,9 @@ use rgba::RGBA;
 mod dashes;
 use dashes::Dashes;
 
+mod shapes;
+use shapes::{Arc, Curve};
+
 mod atoms;
 mod line_caps;
 mod line_joins;
@@ -105,6 +108,47 @@ fn set_dash(image: ImageArc, dashes: Dashes) -> XairoResult {
     Ok(image)
 }
 
+#[rustler::nif]
+fn rel_move_to(image: ImageArc, dx: f64, dy: f64) -> XairoResult {
+    image.context.rel_move_to(dx, dy);
+    Ok(image)
+}
+
+#[rustler::nif]
+fn rel_line_to(image: ImageArc, dx: f64, dy: f64) -> XairoResult {
+    image.context.rel_line_to(dx, dy);
+    Ok(image)
+}
+
+#[rustler::nif]
+fn arc(image: ImageArc, shape: Arc) -> XairoResult {
+    image.context.arc(shape.center.x, shape.center.y, shape.radius, shape.start_angle, shape.stop_angle);
+    Ok(image)
+}
+
+#[rustler::nif]
+fn arc_negative(image: ImageArc, shape: Arc) -> XairoResult {
+    image.context.arc_negative(shape.center.x, shape.center.y, shape.radius, shape.start_angle, shape.stop_angle);
+    Ok(image)
+}
+
+#[rustler::nif]
+fn curve_to(image: ImageArc, curve: Curve) -> XairoResult {
+    image.context.curve_to(
+        curve.first_control_point.x, curve.first_control_point.y,
+        curve.second_control_point.x, curve.second_control_point.y,
+        curve.curve_end.x, curve.curve_end.y
+    );
+
+    Ok(image)
+}
+
+#[rustler::nif]
+fn rel_curve_to(image: ImageArc, x1: f64, y1: f64, x2: f64, y2: f64, x3: f64, y3: f64) -> XairoResult {
+    image.context.rel_curve_to(x1, y1, x2, y2, x3, y3);
+    Ok(image)
+}
+
 rustler::init!(
     "Elixir.Xairo.Native",
     [
@@ -123,6 +167,13 @@ rustler::init!(
         set_line_cap,
         set_line_join,
         set_dash,
+        rel_move_to,
+        rel_line_to,
+        arc,
+        arc_negative,
+
+        curve_to,
+        rel_curve_to,
     ],
     load=on_load
 );

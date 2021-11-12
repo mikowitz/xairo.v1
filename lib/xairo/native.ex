@@ -20,5 +20,14 @@ defmodule Xairo.Native do
   def set_line_join(_i, _lj), do: error()
   def set_dash(_i, _d), do: error()
 
+  def rel_line_to(_i, _dx, _dy), do: error()
+  def rel_move_to(_i, _dx, _dy), do: error()
+
+  def arc(_i, _a), do: error()
+  def arc_negative(_, _a), do: error()
+
+  def curve_to(_i, _c), do: error()
+  def rel_curve_to(_i, _x1, _y1, _x2, _y2, _x3, _y3), do: error()
+
   defp error, do: :erlang.nif_error(:nif_not_loaded)
 end

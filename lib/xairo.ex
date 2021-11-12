@@ -3,43 +3,33 @@ defmodule Xairo do
   API functions for using the cairo graphics library in Elixir.
   """
 
-  alias Xairo.{Dashes, Image, Native, Point, RGBA}
+  import Xairo.NativeFn
+
+  alias Xairo.{Arc, Curve, Dashes, Image, Point, RGBA}
 
   def new_image(width, height, scale \\ 1.0) do
     with {:ok, image} <- Image.new(width, height, scale), do: image
   end
 
-  def save_image(%Image{} = image, filename) do
-    with {:ok, _} <- Native.save_image(image.resource, filename), do: image
-  end
+  native_fn(:save_image, [filename])
 
-  def move_to(%Image{} = image, %Point{} = point) do
-    with {:ok, _} <- Native.move_to(image.resource, point), do: image
-  end
-
-  def move_to(%Image{} = image, x, y) do
+  def move_to(%Image{} = image, {x, y}) do
     with point <- Point.new(x, y), do: move_to(image, point)
   end
 
-  def line_to(%Image{} = image, %Point{} = point) do
-    with {:ok, _} <- Native.line_to(image.resource, point), do: image
-  end
+  native_fn(:move_to, [point])
 
-  def line_to(%Image{} = image, x, y) do
+  def line_to(%Image{} = image, {x, y}) do
     with point <- Point.new(x, y), do: line_to(image, point)
   end
 
-  def stroke(%Image{} = image) do
-    with {:ok, _} <- Native.stroke(image.resource), do: image
-  end
+  native_fn(:line_to, [point])
 
-  def fill(%Image{} = image) do
-    with {:ok, _} <- Native.fill(image.resource), do: image
-  end
+  native_fn(:stroke)
+  native_fn(:fill)
+  native_fn(:paint)
 
-  def paint(%Image{} = image) do
-    with {:ok, _} <- Native.paint(image.resource), do: image
-  end
+  native_fn(:set_color, [rgba])
 
   def set_color(%Image{} = image, red, green, blue, alpha \\ 1.0) do
     with %RGBA{} = rgba <- RGBA.new(red, green, blue, alpha) do
@@ -47,21 +37,11 @@ defmodule Xairo do
     end
   end
 
-  def set_color(%Image{} = image, %RGBA{} = rgba) do
-    with {:ok, _} <- Native.set_color(image.resource, rgba), do: image
-  end
+  native_fn(:set_line_width, [{width, Float}])
 
-  def set_line_width(%Image{} = image, line_width) do
-    with {:ok, _} <- Native.set_line_width(image.resource, line_width * 1.0), do: image
-  end
+  native_fn(:set_line_cap, [cap])
 
-  def set_line_cap(%Image{} = image, line_cap) do
-    with {:ok, _} <- Native.set_line_cap(image.resource, line_cap), do: image
-  end
-
-  def set_line_join(%Image{} = image, line_join) when is_atom(line_join) do
-    with {:ok, _} <- Native.set_line_join(image.resource, line_join), do: image
-  end
+  native_fn(:set_line_join, [join])
 
   def set_dash(%Image{} = image, dashes, offset) do
     with %Dashes{} = dashes <- Dashes.new(dashes, offset) do
@@ -69,11 +49,61 @@ defmodule Xairo do
     end
   end
 
-  def set_dash(%Image{} = image, %Dashes{} = dashes) do
-    with {:ok, _} <- Native.set_dash(image.resource, dashes), do: image
+  native_fn(:set_dash, [dashes])
+
+  native_fn(:close_path)
+
+  native_fn(:rel_move_to, [{dx, Float}, {dy, Float}])
+  native_fn(:rel_line_to, [{dx, Float}, {dy, Float}])
+
+  native_fn(:arc, [arc])
+
+  def arc(%Image{} = image, {x, y}, radius, start_angle, stop_angle) do
+    with %Arc{} = arc <- Arc.new(x, y, radius, start_angle, stop_angle) do
+      arc(image, arc)
+    end
   end
 
-  def close_path(%Image{} = image) do
-    with {:ok, _} <- Native.close_path(image.resource), do: image
+  def arc(%Image{} = image, %Point{} = point, radius, start_angle, stop_angle) do
+    with %Arc{} = arc <- Arc.new(point, radius, start_angle, stop_angle) do
+      arc(image, arc)
+    end
   end
+
+  native_fn(:arc_negative, [arc])
+
+  def arc_negative(%Image{} = image, {x, y}, radius, start_angle, stop_angle) do
+    with %Arc{} = arc <- Arc.new(x, y, radius, start_angle, stop_angle) do
+      arc_negative(image, arc)
+    end
+  end
+
+  def arc_negative(%Image{} = image, %Point{} = point, radius, start_angle, stop_angle) do
+    with %Arc{} = arc <- Arc.new(point, radius, start_angle, stop_angle) do
+      arc_negative(image, arc)
+    end
+  end
+
+  def curve_to(%Image{} = image, {_, _} = p1, {_, _} = p2, {_, _} = p3) do
+    with curve <- Curve.new(p1, p2, p3) do
+      curve_to(image, curve)
+    end
+  end
+
+  def curve_to(%Image{} = image, %Point{} = p1, %Point{} = p2, %Point{} = p3) do
+    with curve <- Curve.new(p1, p2, p3) do
+      curve_to(image, curve)
+    end
+  end
+
+  native_fn(:curve_to, [curve])
+
+  native_fn(:rel_curve_to, [
+    {cx1, Float},
+    {cy1, Float},
+    {cx2, Float},
+    {cy2, Float},
+    {cx3, Float},
+    {cy3, Float}
+  ])
 end
