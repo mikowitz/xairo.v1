@@ -1,4 +1,6 @@
 defmodule Xairo.NativeFn do
+  @moduledoc false
+
   defmacro native_fn(func_name, args \\ []) do
     signature_args =
       Enum.map(args, fn
