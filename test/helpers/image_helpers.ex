@@ -1,4 +1,6 @@
 defmodule Xairo.Helpers.ImageHelpers do
+  @moduledoc false
+
   import ExUnit.Assertions
 
   def assert_image(image, expected_path) do
