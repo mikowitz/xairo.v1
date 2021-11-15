@@ -16,3 +16,11 @@ pub struct Curve {
     pub second_control_point: Point,
     pub curve_end: Point,
 }
+
+#[derive(NifStruct)]
+#[module = "Xairo.Rectangle"]
+pub struct Rectangle {
+    pub corner: Point,
+    pub width: f64,
+    pub height: f64
+}
