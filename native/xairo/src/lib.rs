@@ -14,7 +14,7 @@ mod dashes;
 use dashes::Dashes;
 
 mod shapes;
-use shapes::{Arc, Curve};
+use shapes::{Arc, Curve, Rectangle};
 
 mod atoms;
 mod line_caps;
@@ -149,6 +149,12 @@ fn rel_curve_to(image: ImageArc, x1: f64, y1: f64, x2: f64, y2: f64, x3: f64, y3
     Ok(image)
 }
 
+#[rustler::nif]
+fn rectangle(image: ImageArc, rect: Rectangle) -> XairoResult {
+    image.context.rectangle(rect.corner.x, rect.corner.y, rect.width, rect.height);
+    Ok(image)
+}
+
 rustler::init!(
     "Elixir.Xairo.Native",
     [
@@ -171,6 +177,7 @@ rustler::init!(
         rel_line_to,
         arc,
         arc_negative,
+        rectangle,
 
         curve_to,
         rel_curve_to,

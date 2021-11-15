@@ -58,6 +58,7 @@ defmodule Xairo do
 
   * `line_to/2`
   * `rel_line_to/3`
+  * `rectangle/2` / `rectangle/4`
   * `arc/2` / `arc/5`
   * `arc_negative/2` / `arc_negative/5`
   * `curve_to/2` / `curve_to/4`
@@ -125,7 +126,7 @@ defmodule Xairo do
 
   import Xairo.NativeFn
 
-  alias Xairo.{Arc, Curve, Dashes, Image, Point, RGBA}
+  alias Xairo.{Arc, Curve, Dashes, Image, Point, RGBA, Rectangle}
 
   @doc """
   Creates and returns a new `Xairo.Image` struct
@@ -170,7 +171,7 @@ defmodule Xairo do
   @doc """
   Sets the image's current point to `point`.
 
-  This sets the current point using the given coordinates as an absolution
+  This sets the current point using the given coordinates as an absolute
   position (see `rel_move_to/2` for moving relative to the previous current
   point).
 
@@ -353,7 +354,6 @@ defmodule Xairo do
   Closes the current path by drawing a straight line from the current point to the path's
   start point.
 
-
   ## Example
 
       iex> Xairo.close_path(image)
@@ -363,7 +363,40 @@ defmodule Xairo do
   @spec close_path(Image.t()) :: image_or_error()
   native_fn(:close_path)
 
+  @doc """
+  Moves to a point relative to the current point.
+
+  The point moved to is at a distance of {`dx`, `dy`} from
+  the previous current point in imagespace and makes this
+  new point the current point.
+
+  ## Example
+
+  ```
+  image
+  |> Xairo.move_to({10, 10})
+  |> Xairo.rel_move_to(10, 25)
+  ```
+
+  would result in the new current for the image at {20, 35}.
+  """
+  @spec rel_move_to(Image.t(), number(), number()) :: image_or_error()
   native_fn(:rel_move_to, [{dx, Float}, {dy, Float}])
+
+  @doc """
+  Draws a line from the current point to a point offset from it by `{dx, dy}` in imagespace.
+
+  ## Example
+
+  ```
+  image
+  |> Xairo.move_to({10, 10})
+  |> Xairo.rel_line_to(10, 25)
+  ```
+
+  adds a line from {10, 10} to {20, 35} to the path.
+  """
+  @spec rel_line_to(Image.t(), number(), number()) :: image_or_error()
   native_fn(:rel_line_to, [{dx, Float}, {dy, Float}])
 
   @doc """
@@ -469,6 +502,27 @@ defmodule Xairo do
   @spec curve_to(Image.t(), Curve.t()) :: image_or_error()
   native_fn(:curve_to, [curve])
 
+  @doc """
+  Draws a curve using coordinates relative to the current point.
+
+  After the `image`, the remaining six arguments to this function are paired
+  `x` and `y` relative distances for the first control point, second control point,
+  and curve end point, respectively.
+
+  ```
+  Xairo.rel_curve_to(
+    image,
+    x1, y1,  # the relative x and y distance of the first control point
+    x2, y2,  # the relative x and y distance of the second control point
+    x3, y3   # the relative x and y distance of the curve end
+  )
+  ```
+
+  All values are relative to the *current point* of the path at the time this
+  function is called, not to the previous point defined by the function arguments.
+  """
+  @spec rel_curve_to(Image.t(), number(), number(), number(), number(), number(), number()) ::
+          image_or_error()
   native_fn(:rel_curve_to, [
     {cx1, Float},
     {cy1, Float},
@@ -477,4 +531,39 @@ defmodule Xairo do
     {cx3, Float},
     {cy3, Float}
   ])
+
+  @doc """
+  Adds the rectangle defined by the `t:Xairo.Rectangle.t/0` argument to the current path.
+
+  The `Xairo.Rectangle` struct stores the origin (top left) corner of the rectangle, and its
+  width and height.
+
+  ## Example
+
+      iex> rect = Rectangle.new(Point.new(10, 10), 30, 50)
+      iex> Xairo.rectangle(image, rect)
+
+  This code will result in a rectangle with a top left corner at {10, 10} and a bottom right
+  corner at {40, 60}. It is equivalent to calling
+
+  ```
+  Xairo.move_to(image, {10, 10})
+  |> Xairo.line_to({40, 10})
+  |> Xairo.line_to({40, 60})
+  |> Xairo.line_to({10, 60})
+  |> Xairo.line_to({10, 10})
+  ```
+  """
+  @spec rectangle(Image.t(), Rectangle.t()) :: image_or_error()
+  native_fn(:rectangle, [rectangle])
+
+  @doc """
+  Calls `rectangle/2` with the given image and a `t:Xairo.Rectangle.t/0`
+  constructed from the remaining arguments.
+  """
+  @spec rectangle(Image.t(), coordinate(), number(), number()) :: image_or_error()
+  @spec rectangle(Image.t(), Point.t(), number(), number()) :: image_or_error()
+  def rectangle(%Image{} = image, corner, width, height) do
+    with rect <- Rectangle.new(corner, width, height), do: rectangle(image, rect)
+  end
 end
