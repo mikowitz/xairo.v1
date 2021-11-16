@@ -4,21 +4,19 @@ use rustler::{Atom, Env, Term};
 
 mod xairo_image;
 use xairo_image::{ImageArc, XairoImage, XairoResult};
-mod point;
-use point::Point;
 
 mod rgba;
 use rgba::RGBA;
 
-mod dashes;
-use dashes::Dashes;
-
 mod shapes;
-use shapes::{Arc, Curve, Rectangle};
+use shapes::{Arc, Curve, Dashes, Point, Rectangle};
 
 mod atoms;
 mod line_caps;
 mod line_joins;
+mod linear_gradient;
+mod radial_gradient;
+mod mesh;
 
 #[rustler::nif]
 fn move_to(image: ImageArc, point: Point) -> XairoResult {
@@ -178,6 +176,10 @@ rustler::init!(
         arc,
         arc_negative,
         rectangle,
+
+        linear_gradient::set_linear_gradient_source,
+        radial_gradient::set_radial_gradient_source,
+        mesh::set_mesh_source,
 
         curve_to,
         rel_curve_to,
