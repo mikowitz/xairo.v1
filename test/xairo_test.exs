@@ -1,5 +1,5 @@
 defmodule XairoTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   import Xairo.Helpers.ImageHelpers
 
   alias Xairo.{Dashes, Point}
@@ -9,10 +9,6 @@ defmodule XairoTest do
       Xairo.new_image(100, 100, 2)
       |> Xairo.set_color(1, 1, 1)
       |> Xairo.paint()
-
-    on_exit(fn ->
-      :ok = File.rm("test.png")
-    end)
 
     {:ok, %{image: image}}
   end

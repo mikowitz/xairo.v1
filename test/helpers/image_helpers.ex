@@ -3,20 +3,22 @@ defmodule Xairo.Helpers.ImageHelpers do
 
   import ExUnit.Assertions
 
-  def assert_image(image, expected_path) do
-    Xairo.save_image(image, "test.png")
+  def assert_image(image, path) do
+    Xairo.save_image(image, path)
 
-    actual = hash("test.png")
-    expected = hash("test/images/" <> expected_path)
+    actual = hash(path)
+    expected = hash("test/images/" <> path)
 
     assert actual == expected
+
+    :ok = File.rm(path)
   end
 
   defp hash(file) do
-    initial_state = :crypto.hash_init(:sha256)
-
-    File.stream!(file, [], 2048)
-    |> Enum.reduce(initial_state, &:crypto.hash_update(&2, &1))
+    File.stream!(file)
+    |> Enum.reduce(:crypto.hash_init(:sha256), fn line, acc ->
+      :crypto.hash_update(acc, line)
+    end)
     |> :crypto.hash_final()
   end
 end

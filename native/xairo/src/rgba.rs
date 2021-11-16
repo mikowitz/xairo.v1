@@ -1,4 +1,4 @@
-#[derive(NifStruct)]
+#[derive(Debug,NifStruct)]
 #[module = "Xairo.RGBA"]
 pub struct RGBA {
     pub red: f64,

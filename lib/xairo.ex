@@ -91,6 +91,7 @@ defmodule Xairo do
   These functions are:
 
   * `set_color/2` / `set_color/4` / `set_color/5`
+  * `set_source/2`
   * `set_line_width/2`
   * `set_line_cap/2`
   * `set_line_join/2`
@@ -106,9 +107,19 @@ defmodule Xairo do
   """
 
   @typedoc """
+  Shorthand for the type `a | nil`
+  """
+  @type maybe(a) :: a | nil
+
+  @typedoc """
   A 2-element tuple of numbers representing an {x, y} coordinate in imagespace.
   """
   @type coordinate :: {number(), number()}
+  @typedoc """
+  Union type shorthand for representing a fixed point in imagespace
+  """
+  @type point :: Xairo.Point.t() | coordinate()
+
   @typedoc """
   A 2-element tuple representing an error.
 
@@ -126,6 +137,7 @@ defmodule Xairo do
 
   import Xairo.NativeFn
 
+  alias Xairo.Native
   alias Xairo.{Arc, Curve, Dashes, Image, Point, RGBA, Rectangle}
 
   @doc """
@@ -565,5 +577,36 @@ defmodule Xairo do
   @spec rectangle(Image.t(), Point.t(), number(), number()) :: image_or_error()
   def rectangle(%Image{} = image, corner, width, height) do
     with rect <- Rectangle.new(corner, width, height), do: rectangle(image, rect)
+  end
+
+  alias Xairo.{Pattern, Pattern.LinearGradient, Pattern.RadialGradient, Pattern.Mesh}
+
+  @doc """
+  Sets a pattern as the color source for the image.
+
+  The pattern can be one of
+
+  - `Xairo.Pattern.LinearGradient`
+  - `Xairo.Pattern.RadialGradient`
+  - `Xairo.Pattern.Mesh`
+
+  See the documentation for each module to understand how to construct
+  it so that it can be set as the source with this function. All desired
+  colors stops must be set before the source is set.
+  """
+  @spec set_source(Image.t(), Pattern.pattern()) :: image_or_error()
+  def set_source(%Image{} = image, %LinearGradient{} = gradient) do
+    Native.set_linear_gradient_source(image.resource, gradient)
+    image
+  end
+
+  def set_source(%Image{} = image, %RadialGradient{} = gradient) do
+    Native.set_radial_gradient_source(image.resource, gradient)
+    image
+  end
+
+  def set_source(%Image{} = image, %Mesh{} = mesh) do
+    Native.set_mesh_source(image.resource, mesh)
+    image
   end
 end

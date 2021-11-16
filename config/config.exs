@@ -1,4 +1,8 @@
 import Config
 
 config :mix_test_watch,
-  extra_extensions: [".rs"]
+  extra_extensions: [".rs"],
+  tasks: [
+    "test",
+    "docs"
+  ]
