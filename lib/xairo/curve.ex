@@ -34,21 +34,12 @@ defmodule Xairo.Curve do
   )
   ```
   """
-  @spec new(Point.t(), Point.t(), Point.t()) :: __MODULE__.t()
-  @spec new(Xairo.coordinate(), Xairo.coordinate(), Xairo.coordinate()) :: __MODULE__.t()
-  def new(%Point{} = first_control_point, %Point{} = second_control_point, %Point{} = curve_end) do
+  @spec new(Xairo.point(), Xairo.point(), Xairo.point()) :: __MODULE__.t()
+  def new(first_control_point, second_control_point, curve_end) do
     %__MODULE__{
-      first_control_point: first_control_point,
-      second_control_point: second_control_point,
-      curve_end: curve_end
-    }
-  end
-
-  def new({x1, y1}, {x2, y2}, {x3, y3}) do
-    %__MODULE__{
-      first_control_point: Point.new(x1, y1),
-      second_control_point: Point.new(x2, y2),
-      curve_end: Point.new(x3, y3)
+      first_control_point: Point.from(first_control_point),
+      second_control_point: Point.from(second_control_point),
+      curve_end: Point.from(curve_end)
     }
   end
 end

@@ -1,5 +1,5 @@
 use crate::shapes::Point;
-use crate::rgba::RGBA;
+use crate::color::RGBA;
 use crate::xairo_image::{ImageArc, XairoResult};
 use cairo::LinearGradient;
 
@@ -22,11 +22,7 @@ fn set_linear_gradient_source(image: ImageArc, gradient: XairoLinearGradient) ->
 
     for (rgba, position) in gradient.color_stops {
         let (r, g, b, a) = rgba.to_tuple();
-        if a == 1.0 {
-            lg.add_color_stop_rgb(position, r, g, b);
-        } else {
-            lg.add_color_stop_rgba(position, r, g, b, a);
-        }
+        lg.add_color_stop_rgba(position, r, g, b, a);
     }
 
     if let Ok(_) = image.context.set_source(&lg) {

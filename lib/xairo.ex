@@ -109,12 +109,13 @@ defmodule Xairo do
   @typedoc """
   Shorthand for the type `a | nil`
   """
-  @type maybe(a) :: a | nil
+  @type or_nil(a) :: a | nil
 
   @typedoc """
   A 2-element tuple of numbers representing an {x, y} coordinate in imagespace.
   """
   @type coordinate :: {number(), number()}
+
   @typedoc """
   Union type shorthand for representing a fixed point in imagespace
   """
@@ -127,18 +128,20 @@ defmodule Xairo do
   the error context.
   """
   @type error :: {:error, atom()}
+
   @typedoc """
   Shorthand for the API return type.
 
   Indicates a function either returns a `t:Xairo.Image.t/0` struct or an
   `t:error/0` tuple.
   """
-  @type image_or_error :: Image.t() | error()
+  @type image_or_error :: Xairo.Image.t() | error()
 
   import Xairo.NativeFn
 
   alias Xairo.Native
-  alias Xairo.{Arc, Curve, Dashes, Image, Point, RGBA, Rectangle}
+  alias Xairo.{Arc, Curve, Dashes, Image, Pattern, Point, RGBA, Rectangle}
+  alias Pattern.{LinearGradient, RadialGradient, Mesh}
 
   @doc """
   Creates and returns a new `Xairo.Image` struct
@@ -159,7 +162,7 @@ defmodule Xairo do
   """
   @spec new_image(number, number, number | nil) :: image_or_error()
   def new_image(width, height, scale \\ 1.0) do
-    with {:ok, image} <- Image.new(width, height, scale), do: image
+    Image.new(width, height, scale)
   end
 
   @doc """
@@ -206,8 +209,7 @@ defmodule Xairo do
       #Image<100x100@2.0 #Reference<0.123.456.789>>
 
   """
-  @spec move_to(Image.t(), Point.t()) :: image_or_error()
-  @spec move_to(Image.t(), coordinate) :: image_or_error()
+  @spec move_to(Image.t(), Xairo.point()) :: image_or_error()
   def move_to(%Image{} = image, {x, y}) do
     with point <- Point.new(x, y), do: move_to(image, point)
   end
@@ -235,8 +237,7 @@ defmodule Xairo do
       #Image<100x100@2.0 #Reference<0.123.456.789>>
 
   """
-  @spec line_to(Image.t(), Point.t()) :: image_or_error()
-  @spec line_to(Image.t(), coordinate) :: image_or_error()
+  @spec line_to(Image.t(), Xairo.point()) :: image_or_error()
   def line_to(%Image{} = image, {x, y}) do
     with point <- Point.new(x, y), do: line_to(image, point)
   end
@@ -339,7 +340,7 @@ defmodule Xairo do
   - `:bevel` creates a cut-off join, at half the set line width from the join point
   - `:miter` creates a sharp, angled, corner
   """
-  @spec set_line_cap(Image.t(), atom()) :: image_or_error()
+  @spec set_line_join(Image.t(), atom()) :: image_or_error()
   native_fn(:set_line_join, [join])
 
   @doc """
@@ -434,8 +435,7 @@ defmodule Xairo do
   @doc """
   Calls `arc/2` with the given `image`, and an `t:Xairo.Arc.t/0` constructed from the remaining arguments.
   """
-  @spec arc(Image.t(), coordinate(), number(), number(), number()) :: image_or_error()
-  @spec arc(Image.t(), Point.t(), number(), number(), number()) :: image_or_error()
+  @spec arc(Image.t(), Xairo.point(), number(), number(), number()) :: image_or_error()
   def arc(%Image{} = image, center, radius, start_angle, stop_angle) do
     with %Arc{} = arc <- Arc.new(center, radius, start_angle, stop_angle) do
       arc(image, arc)
@@ -464,8 +464,7 @@ defmodule Xairo do
   @doc """
   Calls `arc_negative/2` with the given `image`, and an `t:Xairo.Arc.t/0` constructed from the remaining arguments.
   """
-  @spec arc_negative(Image.t(), Point.t(), number(), number(), number()) :: image_or_error()
-  @spec arc_negative(Image.t(), coordinate(), number(), number(), number()) :: image_or_error()
+  @spec arc_negative(Image.t(), Xairo.point(), number(), number(), number()) :: image_or_error()
   def arc_negative(%Image{} = image, center, radius, start_angle, stop_angle) do
     with %Arc{} = arc <- Arc.new(center, radius, start_angle, stop_angle) do
       arc_negative(image, arc)
@@ -476,8 +475,7 @@ defmodule Xairo do
   Calls `curve_to/2` with the given `image` and a `t:Xairo.Curve.t/0` constructed
   from the remaining arguments.
   """
-  @spec curve_to(Image.t(), Point.t(), Point.t(), Point.t()) :: image_or_error()
-  @spec curve_to(Image.t(), coordinate(), coordinate(), coordinate()) :: image_or_error()
+  @spec curve_to(Image.t(), Xairo.point(), Xairo.point(), Xairo.point()) :: image_or_error()
   def curve_to(%Image{} = image, first_control_point, second_control_point, curve_end) do
     with curve <- Curve.new(first_control_point, second_control_point, curve_end) do
       curve_to(image, curve)
@@ -573,13 +571,10 @@ defmodule Xairo do
   Calls `rectangle/2` with the given image and a `t:Xairo.Rectangle.t/0`
   constructed from the remaining arguments.
   """
-  @spec rectangle(Image.t(), coordinate(), number(), number()) :: image_or_error()
-  @spec rectangle(Image.t(), Point.t(), number(), number()) :: image_or_error()
+  @spec rectangle(Image.t(), Xairo.point(), number(), number()) :: image_or_error()
   def rectangle(%Image{} = image, corner, width, height) do
     with rect <- Rectangle.new(corner, width, height), do: rectangle(image, rect)
   end
-
-  alias Xairo.{Pattern, Pattern.LinearGradient, Pattern.RadialGradient, Pattern.Mesh}
 
   @doc """
   Sets a pattern as the color source for the image.

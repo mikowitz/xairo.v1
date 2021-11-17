@@ -67,7 +67,7 @@ defmodule Xairo.Dashes do
   shifted by that number of pixels.
   """
   @spec new([number()], number()) :: __MODULE__.t()
-  def new(dashes \\ [], offset \\ 0.0) do
+  def new(dashes \\ [], offset \\ 0.0) when is_number(offset) do
     with [_ | _] = dashes <- normalize(dashes) do
       %__MODULE__{
         dashes: dashes,
@@ -82,7 +82,7 @@ defmodule Xairo.Dashes do
     {:error, :invalid_dash}
   end
 
-  defp normalize([d | rest]) do
+  defp normalize([d | rest]) when is_number(d) do
     [d * 1.0 | normalize(rest)]
   end
 end

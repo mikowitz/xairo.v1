@@ -46,6 +46,15 @@ jobs:
             _build
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
 
+      - name: plt_cache
+        uses: actions/cache@v2
+        id: plt_cache
+        with:
+          path: |
+            _build/test/*.plt
+            _build/test/*.plt.dash
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}-plt
+
       - name: cargo build
         run: cargo build
         working-directory: ./native/xairo
@@ -70,3 +79,6 @@ jobs:
 
       - name: mix test
         run: mix test
+
+      - name: mix dialyzer
+        run: mix dialyzer

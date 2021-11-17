@@ -48,17 +48,12 @@ defmodule Xairo.Rectangle do
   creates a rectangle with a top left corner at {10, 10}, and a bottom right
   corner at {30, 30}, in absolute imagespace.
   """
-  @spec new(Point.t(), number(), number()) :: __MODULE__.t()
-  @spec new(Xairo.coordinate(), number(), number()) :: __MODULE__.t()
-  def new(%Point{} = corner, width, height) do
+  @spec new(Xairo.point(), number(), number()) :: __MODULE__.t()
+  def new(corner, width, height) when is_number(width) and is_number(height) do
     %__MODULE__{
-      corner: corner,
+      corner: Point.from(corner),
       width: width * 1.0,
       height: height * 1.0
     }
-  end
-
-  def new({x, y}, width, height) do
-    with corner <- Point.new(x, y), do: new(corner, width, height)
   end
 end

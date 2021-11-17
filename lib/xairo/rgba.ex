@@ -61,7 +61,8 @@ defmodule Xairo.RGBA do
 
   """
   @spec new(number(), number(), number(), number() | nil) :: __MODULE__.t()
-  def new(red, green, blue, alpha \\ 1.0) do
+  def new(red, green, blue, alpha \\ 1.0)
+      when is_number(red) and is_number(green) and is_number(blue) and is_number(alpha) do
     %__MODULE__{
       red: normalize(red),
       green: normalize(green),
@@ -98,21 +99,26 @@ defmodule Xairo.RGBA do
   with a final argument of `0`.
   """
   @spec new(number()) :: __MODULE__.t()
-  def new(hex) when hex < 0x1000000 do
-    with red <- hex >>> 16 &&& 0xFF,
-         green <- hex >>> 8 &&& 0xFF,
-         blue <- hex &&& 0xFF do
+  def new(hex) when is_number(hex) and hex < 0x1000000 do
+    with red <- shift(hex, 16),
+         green <- shift(hex, 8),
+         blue <- shift(hex, 0) do
       new(red, green, blue)
     end
   end
 
-  def new(hex) when hex >= 0x1000000 do
-    with alpha <- hex >>> 24 &&& 0xFF,
-         red <- hex >>> 16 &&& 0xFF,
-         green <- hex >>> 8 &&& 0xFF,
-         blue <- hex &&& 0xFF do
+  def new(hex) when is_number(hex) and hex >= 0x1000000 do
+    # with alpha <- hex >>> 24 &&& 0xFF,
+    with alpha <- shift(hex, 24),
+         red <- shift(hex, 16),
+         green <- shift(hex, 8),
+         blue <- shift(hex, 0) do
       new(red, green, blue, alpha)
     end
+  end
+
+  defp shift(value, shift_by) do
+    value >>> shift_by &&& 0xFF
   end
 
   defp normalize(n) when n <= 1, do: n * 1.0
@@ -122,13 +128,14 @@ defmodule Xairo.RGBA do
   end
 
   defimpl Inspect do
+    import Inspect.Algebra
+
     def inspect(%Xairo.RGBA{red: r, green: g, blue: b, alpha: a}, _opts) do
-      [
+      concat([
         "#RGBA<",
         [r, g, b, a] |> Enum.join(", "),
         ">"
-      ]
-      |> Enum.join("")
+      ])
     end
   end
 end

@@ -85,32 +85,24 @@ defmodule Xairo.Pattern.LinearGradient do
   A new vertical gradient with no color stops
 
       iex> LinearGradient.new({0, 0}, {0, 100})
-      #LinearGradient<{0.0, 0.0}, {0.0, 100.0}, 0>
+      #LinearGradient<(0.0, 0.0), (0.0, 100.0), 0>
 
   A diagonal gradient that starts at red and ends at blue
 
       iex> red = RGBA.new(1, 0, 0)
       iex> blue = RGBA.new(0, 0, 1)
       iex> LinearGradient.new({0, 0}, {100, 100}, [{red, 0}, {blue, 1}])
-      #LinearGradient<{0.0, 0.0}, {100.0, 100.0}, 2>
+      #LinearGradient<(0.0, 0.0), (100.0, 100.0), 2>
 
   """
-  @spec new(Xairo.point(), Xairo.point(), [Xairo.Pattern.color_stop()] | nil) :: __MODULE__.t()
-  def new(start_point, stop_point, color_stops \\ [])
-
-  def new(%Point{} = start_point, %Point{} = stop_point, color_stops) do
+  @spec new(Xairo.point(), Xairo.point(), Xairo.or_nil([Xairo.Pattern.color_stop()])) ::
+          __MODULE__.t()
+  def new(start_point, stop_point, color_stops \\ []) do
     %__MODULE__{
-      start_point: start_point,
-      stop_point: stop_point,
+      start_point: Point.from(start_point),
+      stop_point: Point.from(stop_point),
       color_stops: color_stops
     }
-  end
-
-  def new({x1, y1}, {x2, y2}, color_stops) do
-    with start_point <- Point.new(x1, y1),
-         stop_point <- Point.new(x2, y2) do
-      new(start_point, stop_point, color_stops)
-    end
   end
 
   @doc """
@@ -130,7 +122,7 @@ defmodule Xairo.Pattern.LinearGradient do
       iex> LinearGradient.new({0, 0}, {100, 0})
       ...> |> LinearGradient.add_color_stop(blue, 0)
       ...> |> LinearGradient.add_color_stop(red, 0.75)
-      #LinearGradient<{0.0, 0.0}, {100.0, 0.0}, 2>
+      #LinearGradient<(0.0, 0.0), (100.0, 0.0), 2>
 
   """
   @spec add_color_stop(__MODULE__.t(), RGBA.t(), number()) :: __MODULE__.t()
@@ -138,7 +130,8 @@ defmodule Xairo.Pattern.LinearGradient do
         %__MODULE__{} = gradient,
         %RGBA{} = color,
         position
-      ) do
+      )
+      when is_number(position) do
     %__MODULE__{
       gradient
       | color_stops: [{color, position} | gradient.color_stops]
@@ -146,8 +139,10 @@ defmodule Xairo.Pattern.LinearGradient do
   end
 
   defimpl Inspect do
+    import Inspect.Algebra
+
     def inspect(gradient, _opts) do
-      [
+      concat([
         "#LinearGradient<",
         [
           inspect_point(gradient.start_point),
@@ -156,12 +151,11 @@ defmodule Xairo.Pattern.LinearGradient do
         ]
         |> Enum.join(", "),
         ">"
-      ]
-      |> Enum.join("")
+      ])
     end
 
     defp inspect_point(%Point{x: x, y: y}) do
-      "{#{x}, #{y}}"
+      "(#{x}, #{y})"
     end
   end
 end

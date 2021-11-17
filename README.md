@@ -1,21 +1,40 @@
 # Xairo
 
-**TODO: Add description**
+Elixir API for the [cairo](https://cairographics.org) 2d graphics library.
+
+It uses [Rust bindings for cairo](https://docs.rs/cairo-rs/0.14.9/cairo/) and the [Rustler](https://github.com/rusterlium/rustler) package to provide the NIF bridge to Elixir.
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `xairo` to your list of dependencies in `mix.exs`:
+Add Xairo as a dependency in your `mix.exs` file.
 
 ```elixir
 def deps do
   [
-    {:xairo, "~> 0.1.0"}
+    {:xairo, github: "mikowitz/xairo"}
   ]
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/xairo](https://hexdocs.pm/xairo).
+Then run this in your shell to fetch the new dependency:
+
+```
+~$ mix deps.get
+```
+
+## Usage
+
+Currently, Xairo supports
+
+* creating images
+* easily scaling images up or down
+* drawing on those images with
+  * straight lines
+  * arcs
+  * Bézier curves
+  * rectangles
+* creating solid, gradient, and mesh color sources
+* saving images as *.png files
+
+For full documentation, see the [`Xairo` module](lib/xairo.ex).
 
