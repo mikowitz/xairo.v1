@@ -31,14 +31,49 @@ defmodule Xairo.Point do
     }
   end
 
+  @doc """
+  Returns a Point, if possible, from the arguments.
+
+  Argument can be any of
+
+  - a `t:Xairo.Point.t/0` struct
+  - a 2-element numeric tuple
+  - two numeric arguments
+
+  ## Examples
+
+    iex> Point.from(Point.new(1, 2))
+    #Point<(1.0, 2.0)>
+
+    iex> Point.from({3, 4})
+    #Point<(3.0, 4.0)>
+
+    iex> Point.from(5, 6)
+    #Point<(5.0, 6.0)>
+
+  """
+  @spec from(__MODULE__.t()) :: __MODULE__.t()
+  @spec from({number(), number()}) :: __MODULE__.t()
+  @spec from(number(), number()) :: __MODULE__.t()
+  def from(%__MODULE__{} = point), do: point
+
+  def from({x, y}) when is_number(x) and is_number(y) do
+    __MODULE__.new(x, y)
+  end
+
+  def from(x, y) when is_number(x) and is_number(y) do
+    __MODULE__.new(x, y)
+  end
+
   defimpl Inspect do
+    import Inspect.Algebra
+
     def inspect(%Xairo.Point{x: x, y: y}, _opts) do
-      [
+      concat([
         "#Point<(",
         [x, y] |> Enum.join(", "),
         ")>"
-      ]
-      |> Enum.join("")
+      ])
     end
   end
 end

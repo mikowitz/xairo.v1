@@ -83,17 +83,18 @@ defmodule Xairo.Image do
   end
 
   defimpl Inspect do
+    import Inspect.Algebra
+
     def inspect(
           %Xairo.Image{width: width, height: height, scale: scale, reference: reference},
           opts
         ) do
-      [
+      concat([
         "#Image<",
         "#{width}x#{height}@#{scale} ",
-        Inspect.Algebra.to_doc(reference, opts),
+        to_doc(reference, opts),
         ">"
-      ]
-      |> Enum.join("")
+      ])
     end
   end
 end

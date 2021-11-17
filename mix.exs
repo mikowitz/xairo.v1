@@ -8,7 +8,8 @@ defmodule Xairo.MixProject do
       elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      elixirc_paths: compiler_paths(Mix.env())
+      elixirc_paths: compiler_paths(Mix.env()),
+      dialyzer: [plt_add_apps: [:ex_unit]]
     ]
   end
 
@@ -23,6 +24,7 @@ defmodule Xairo.MixProject do
   defp deps do
     [
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.24", only: [:dev, :test], runtime: false},
       {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
       {:rustler, "~> 0.22.2"}

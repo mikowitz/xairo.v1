@@ -90,12 +90,13 @@ defmodule Xairo.Pattern.Mesh do
     :control_points
   ]
 
+  @type corner_index :: 0 | 1 | 2 | 3
   @type path_definition :: Point.t() | Curve.t()
   @type t :: %__MODULE__{
           start: Point.t(),
           side_paths: [path_definition()],
-          corner_colors: [Xairo.maybe(RGBA)],
-          control_points: [Xairo.maybe(Point)]
+          corner_colors: [Xairo.or_nil(RGBA)],
+          control_points: [Xairo.or_nil(Point)]
         }
 
   @doc """
@@ -106,7 +107,7 @@ defmodule Xairo.Pattern.Mesh do
   ## Example
 
       iex> Mesh.new({0,0})
-      #Mesh<{0.0, 0.0}, 0, 0>
+      #Mesh<(0.0, 0.0), 0, 0>
 
   """
   @spec new(Xairo.point()) :: __MODULE__.t()
@@ -131,21 +132,17 @@ defmodule Xairo.Pattern.Mesh do
   ## Example
 
       iex> mesh = Mesh.new({0, 0})
-      #Mesh<{0.0, 0.0}, 0, 0>
+      #Mesh<(0.0, 0.0), 0, 0>
       iex> Mesh.line_to(mesh, {100, 0})
-      #Mesh<{0.0, 0.0}, 1, 0>
+      #Mesh<(0.0, 0.0), 1, 0>
 
   """
   @spec line_to(__MODULE__.t(), Xairo.point()) :: __MODULE__.t()
-  def line_to(%__MODULE__{} = mesh, %Point{} = point) do
+  def line_to(%__MODULE__{} = mesh, point) do
     %__MODULE__{
       mesh
-      | side_paths: mesh.side_paths ++ [point]
+      | side_paths: mesh.side_paths ++ [Point.from(point)]
     }
-  end
-
-  def line_to(%__MODULE__{} = mesh, {x, y}) do
-    with point <- Point.new(x, y), do: line_to(mesh, point)
   end
 
   @doc """
@@ -162,9 +159,9 @@ defmodule Xairo.Pattern.Mesh do
   ## Example
 
       iex> mesh = Mesh.new({0, 0})
-      #Mesh<{0.0, 0.0}, 0, 0>
+      #Mesh<(0.0, 0.0), 0, 0>
       iex> Mesh.curve_to(mesh, {20, 10}, {70, -10}, {100, 0})
-      #Mesh<{0.0, 0.0}, 1, 0>
+      #Mesh<(0.0, 0.0), 1, 0>
 
   """
   @spec curve_to(__MODULE__.t(), Curve.t()) :: __MODULE__.t()
@@ -189,12 +186,14 @@ defmodule Xairo.Pattern.Mesh do
   ## Example
 
       iex> mesh = Mesh.new({0, 0})
-      #Mesh<{0.0, 0.0}, 0, 0>
+      #Mesh<(0.0, 0.0), 0, 0>
       iex> Mesh.set_corner_color(mesh, 0, RGBA.new(1, 0, 0))
-      #Mesh<{0.0, 0.0}, 0, 1>
+      #Mesh<(0.0, 0.0), 0, 1>
 
   """
-  def set_corner_color(%__MODULE__{} = mesh, corner_index, color) do
+  @spec set_corner_color(__MODULE__.t(), corner_index, RGBA.t()) :: __MODULE__.t()
+  def set_corner_color(%__MODULE__{} = mesh, corner_index, %RGBA{} = color)
+      when is_number(corner_index) do
     corner_colors = List.insert_at(mesh.corner_colors, corner_index, color)
     %__MODULE__{mesh | corner_colors: corner_colors}
   end
@@ -213,16 +212,12 @@ defmodule Xairo.Pattern.Mesh do
       iex> Mesh.new({0, 0})
       ...> |> Mesh.set_corner_color(0, RGBA.new(1, 0, 0))
       ...> |> Mesh.set_control_point(0, {50, 50})
-      #Mesh<{0.0, 0.0}, 0, 1>
+      #Mesh<(0.0, 0.0), 0, 1>
   """
-  @spec set_control_point(__MODULE__.t(), number(), Xairo.point()) :: __MODULE__.t()
-  def set_control_point(%__MODULE__{} = mesh, corner_index, %Point{} = point) do
-    control_points = List.insert_at(mesh.control_points, corner_index, point)
+  @spec set_control_point(__MODULE__.t(), corner_index(), Xairo.point()) :: __MODULE__.t()
+  def set_control_point(%__MODULE__{} = mesh, corner_index, point) when is_number(corner_index) do
+    control_points = List.insert_at(mesh.control_points, corner_index, Point.from(point))
     %__MODULE__{mesh | control_points: control_points}
-  end
-
-  def set_control_point(%__MODULE__{} = mesh, corner_index, {x, y}) do
-    with point <- Point.new(x, y), do: set_control_point(mesh, corner_index, point)
   end
 
   defimpl Inspect do
@@ -241,7 +236,7 @@ defmodule Xairo.Pattern.Mesh do
     end
 
     defp inspect_point(%Point{x: x, y: y}) do
-      "{#{x}, #{y}}"
+      "(#{x}, #{y})"
     end
   end
 end

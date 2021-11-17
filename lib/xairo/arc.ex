@@ -32,9 +32,9 @@ defmodule Xairo.Arc do
 
   @type t :: %__MODULE__{
           center: Point.t(),
-          radius: number(),
-          start_angle: number(),
-          stop_angle: number()
+          radius: float(),
+          start_angle: float(),
+          stop_angle: float()
         }
 
   @doc """
@@ -61,20 +61,11 @@ defmodule Xairo.Arc do
   and when passed to `Xairo.arc_negative/2`, the same arc would produce the left
   half of a circle.
   """
-  @spec new(Xairo.coordinate(), number(), number(), number()) :: __MODULE__.t()
-  @spec new(Point.t(), number(), number(), number()) :: __MODULE__.t()
-  def new(%Point{} = center, radius, start_angle, stop_angle) do
+  @spec new(Xairo.point(), number(), number(), number()) :: __MODULE__.t()
+  def new(center, radius, start_angle, stop_angle)
+      when is_number(radius) and is_number(start_angle) and is_number(stop_angle) do
     %__MODULE__{
-      center: center,
-      radius: radius * 1.0,
-      start_angle: start_angle * 1.0,
-      stop_angle: stop_angle * 1.0
-    }
-  end
-
-  def new({x, y}, radius, start_angle, stop_angle) do
-    %__MODULE__{
-      center: Point.new(x, y),
+      center: Point.from(center),
       radius: radius * 1.0,
       start_angle: start_angle * 1.0,
       stop_angle: stop_angle * 1.0

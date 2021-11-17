@@ -1,5 +1,5 @@
 use crate::shapes::Point;
-use crate::rgba::RGBA;
+use crate::color::RGBA;
 use crate::shapes::Curve;
 use crate::xairo_image::{ImageArc, XairoResult};
 use cairo::{Mesh, MeshCorner};
