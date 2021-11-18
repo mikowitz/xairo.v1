@@ -7,6 +7,32 @@ on:
     branches:
       - main
 jobs:
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2.4.0
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy
+          override: true
+
+      - name: rust-cache
+        uses: Swatinem/rust-cache@v1
+        id: rust-cache
+        with:
+          working-directory: ./native/xairo
+          key: ${{ matrix.otp }}-${{ matrix.elixir }}-clippy
+
+      - name: cargo build
+        run: cargo build
+        working-directory: ./native/xairo
+        if: steps.rust-cache.outputs.cache-hit != 'true'
+
+      - run: cargo clippy --all-features
+        working-directory: ./native/xairo
+
   test:
     runs-on: ubuntu-latest
     env:

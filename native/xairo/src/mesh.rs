@@ -1,5 +1,5 @@
 use crate::shapes::Point;
-use crate::color::RGBA;
+use crate::color::Rgba;
 use crate::shapes::Curve;
 use crate::xairo_image::{ImageArc, XairoResult};
 use cairo::{Mesh, MeshCorner};
@@ -15,7 +15,7 @@ pub enum SidePath {
 pub struct XairoMesh {
     pub start: Point,
     side_paths: Vec<SidePath>,
-    corner_colors: Vec<Option<RGBA>>,
+    corner_colors: Vec<Option<Rgba>>,
     control_points: Vec<Option<Point>>
 }
 
@@ -31,19 +31,19 @@ fn set_mesh_source(image: ImageArc, mesh: XairoMesh) -> XairoResult {
 
     m.end_patch();
 
-    if let Ok(_) = image.context.set_source(&m) {
+    if image.context.set_source(&m).is_ok() {
         Ok(image)
     } else {
         Err(crate::atoms::system::badarg())
     }
 }
 
-fn draw_paths<'a>(m: &'a Mesh, side_paths: &'a Vec<SidePath>) -> &'a Mesh {
+fn draw_paths<'a>(mesh: &'a Mesh, side_paths: &[SidePath]) -> &'a Mesh {
     for path in side_paths {
         match path {
-            SidePath::Point(point) => m.line_to(point.x, point.y),
+            SidePath::Point(point) => mesh.line_to(point.x, point.y),
             SidePath::Curve(curve) => {
-                m.curve_to(
+                mesh.curve_to(
                     curve.first_control_point.x, curve.first_control_point.y,
                     curve.second_control_point.x, curve.second_control_point.y,
                     curve.curve_end.x, curve.curve_end.y
@@ -51,36 +51,36 @@ fn draw_paths<'a>(m: &'a Mesh, side_paths: &'a Vec<SidePath>) -> &'a Mesh {
             }
         }
     };
-    m
+    mesh
 }
 
-fn set_colors<'a>(m: &'a Mesh, corner_colors: &'a Vec<Option<RGBA>>) -> &'a Mesh {
-    for i in 0..4 {
-        match &corner_colors[i] {
+fn set_colors<'a>(mesh: &'a Mesh, corner_colors: &[Option<Rgba>]) -> &'a Mesh {
+    for (i, color) in corner_colors.iter().enumerate().take(4) {
+        match color {
             Some(rgba) => {
                 let (r, g, b, a) = rgba.to_tuple();
                 if let Some(corner) = mesh_corner(i) {
-                    m.set_corner_color_rgba(corner, r, g, b, a);
+                    mesh.set_corner_color_rgba(corner, r, g, b, a);
                 }
             },
             None => ()
         }
     };
-    m
+    mesh
 }
 
-fn set_control_points<'a>(m: &'a Mesh, control_points: &'a Vec<Option<Point>>) -> &'a Mesh {
-    for i in 0..4 {
-        match &control_points[i] {
+fn set_control_points<'a>(mesh: &'a Mesh, control_points: &[Option<Point>]) -> &'a Mesh {
+    for (i, point) in control_points.iter().enumerate().take(4) {
+        match point {
             Some(point) => {
                 if let Some(corner) = mesh_corner(i) {
-                    m.set_control_point(corner, point.x, point.y);
+                    mesh.set_control_point(corner, point.x, point.y);
                 }
             },
             None => ()
         }
     };
-    m
+    mesh
 }
 
 fn mesh_corner(index: usize) -> Option<MeshCorner> {

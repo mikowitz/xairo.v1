@@ -1,5 +1,5 @@
 use crate::shapes::Point;
-use crate::color::RGBA;
+use crate::color::Rgba;
 use crate::xairo_image::{ImageArc, XairoResult};
 use cairo::RadialGradient;
 
@@ -8,7 +8,7 @@ use cairo::RadialGradient;
 pub struct XairoRadialGradient {
     pub first_circle: (Point, f64),
     pub second_circle: (Point, f64),
-    pub color_stops: Vec<(RGBA, f64)>
+    pub color_stops: Vec<(Rgba, f64)>
 }
 
 #[rustler::nif]
@@ -26,7 +26,7 @@ fn set_radial_gradient_source(image: ImageArc, gradient: XairoRadialGradient) ->
         rg.add_color_stop_rgba(position, r, g, b, a);
     }
 
-    if let Ok(_) = image.context.set_source(&rg) {
+    if image.context.set_source(&rg).is_ok() {
         Ok(image)
     } else {
         Err(crate::atoms::system::badarg())
