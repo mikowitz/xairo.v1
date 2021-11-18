@@ -21,9 +21,9 @@ impl XairoImage {
         }
     }
 
-    pub fn save(self: &Self, filename: String) -> Result<(), Atom> {
+    pub fn save(&self, filename: String) -> Result<(), Atom> {
         if let Ok(mut file) = File::create(filename) {
-            if let Ok(_) = self.surface.write_to_png(&mut file) {
+            if self.surface.write_to_png(&mut file).is_ok() {
                 Ok(())
             } else {
                 Err(system::image_save_error())
@@ -33,7 +33,7 @@ impl XairoImage {
         }
     }
 
-    pub fn scale(self: &Self, sx: f64, sy: f64) -> &Self {
+    pub fn scale(&self, sx: f64, sy: f64) -> &Self {
         self.context.scale(sx, sy);
         self
     }

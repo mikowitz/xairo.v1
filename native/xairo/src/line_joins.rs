@@ -23,9 +23,7 @@ fn set_line_join(image: ImageArc, line_join: Atom) -> XairoResult {
 }
 
 fn match_line_join(line_cap: Atom) -> Result<LineJoin, Atom> {
-    if line_cap == default() {
-        Ok(LineJoin::Miter)
-    } else if line_cap == miter() {
+    if line_cap == default() || line_cap == miter() {
         Ok(LineJoin::Miter)
     } else if line_cap == round() {
         Ok(LineJoin::Round)

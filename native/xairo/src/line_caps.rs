@@ -23,9 +23,7 @@ fn set_line_cap(image: ImageArc, line_cap: Atom) -> XairoResult {
 }
 
 fn match_line_cap(line_cap: Atom) -> Result<LineCap, Atom> {
-    if line_cap == default() {
-        Ok(LineCap::Butt)
-    } else if line_cap == butt() {
+    if line_cap == default() || line_cap == butt() {
         Ok(LineCap::Butt)
     } else if line_cap == square() {
         Ok(LineCap::Square)
