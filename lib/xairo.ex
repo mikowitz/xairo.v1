@@ -604,4 +604,29 @@ defmodule Xairo do
     Native.set_mesh_source(image.resource, mesh)
     image
   end
+
+  @doc """
+  Sets the font size for the context.
+
+  The font size set will apply to all subsequent calls to `show_text/2` until `set_font_size/2`
+  is called again. If this function is not called at all before the first calls to `show_text/2`,
+  the font size defaults to 10.0
+  """
+  @spec set_font_size(Image.t(), number()) :: image_or_error()
+  native_fn(:set_font_size, [{font_size, Float}])
+
+  @doc """
+  Prints the given text onto the image.
+
+  The text is displayed with the origin (lower left corner of the text) at the
+  current point of the given path.  After `show_text/2` has been called, the
+  current point changes by the values given by `x_advance` and `y_advance` fields
+  on the given string's text extents. Generally, for all languages except some
+  East-Asian languages that have a vertical text layout, the `y_advance` will be 0,
+  and the `x_advance` will be roughly the width of the displayed text.
+
+  See `Xairo.Text.Extents` for more details.
+  """
+  @spec show_text(Image.t(), String.t()) :: image_or_error()
+  native_fn(:show_text, [text])
 end
