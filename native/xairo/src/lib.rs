@@ -11,6 +11,7 @@ mod linear_gradient;
 mod mesh;
 mod radial_gradient;
 mod shapes;
+mod text;
 mod xairo_image;
 use xairo_image::XairoImage;
 
@@ -46,6 +47,10 @@ rustler::init!(
         linear_gradient::set_linear_gradient_source,
         radial_gradient::set_radial_gradient_source,
         mesh::set_mesh_source,
+
+        text::set_font_size,
+        text::show_text,
+        text::text_extents,
     ],
     load=on_load
 );

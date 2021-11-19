@@ -35,5 +35,10 @@ defmodule Xairo.Native do
   def set_radial_gradient_source(_i, _rg), do: error()
   def set_mesh_source(_i, _m), do: error()
 
+  def set_font_size(_i, _s), do: error()
+  def show_text(_i, _str), do: error()
+
+  def text_extents(_i, _str), do: error()
+
   defp error, do: :erlang.nif_error(:nif_not_loaded)
 end
