@@ -3,7 +3,7 @@ use crate::atoms;
 
 use rustler::Atom;
 use cairo::LineJoin;
-use crate::atoms::system;
+use crate::AtomToString;
 
 rustler::atoms! {
     default,
@@ -22,14 +22,12 @@ fn set_line_join(image: ImageArc, line_join: Atom) -> XairoResult {
     }
 }
 
-fn match_line_join(line_cap: Atom) -> Result<LineJoin, Atom> {
-    if line_cap == default() || line_cap == miter() {
-        Ok(LineJoin::Miter)
-    } else if line_cap == round() {
-        Ok(LineJoin::Round)
-    } else if line_cap == bevel() {
-        Ok(LineJoin::Bevel)
-    } else {
-        Err(system::badarg())
+fn match_line_join(line_join: Atom) -> Result<LineJoin, rustler::Error> {
+    let line_join = &line_join.to_string()[..];
+    match &line_join.to_string()[..] {
+        "default" | "miter" => Ok(LineJoin::Miter),
+        "round" => Ok(LineJoin::Round),
+        "bevel" => Ok(LineJoin::Bevel),
+        _ => Err(rustler::Error::BadArg)
     }
 }
