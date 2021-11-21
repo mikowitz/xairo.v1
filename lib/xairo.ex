@@ -140,7 +140,7 @@ defmodule Xairo do
   import Xairo.NativeFn
 
   alias Xairo.Native
-  alias Xairo.{Arc, Curve, Dashes, Image, Pattern, Point, RGBA, Rectangle}
+  alias Xairo.{Arc, Curve, Dashes, Image, Matrix, Pattern, Point, RGBA, Rectangle, Text.Font}
   alias Pattern.{LinearGradient, RadialGradient, Mesh}
 
   @doc """
@@ -629,4 +629,47 @@ defmodule Xairo do
   """
   @spec show_text(Image.t(), String.t()) :: image_or_error()
   native_fn(:show_text, [text])
+
+  @doc """
+  Sets the current font face for the image.
+
+  Takes an as argument a `t:Xairo.Text.Font.t/0` "toy" font definition
+  and uses those values to configure the font options for all subsequent calls to
+  `show_text/2`.
+
+  See `Xairo.Text.Font` for a discussion of the font struct.
+  """
+  @spec set_font_face(Image.t(), Font.t()) :: image_or_error()
+  native_fn(:set_font_face, [font])
+
+  @doc """
+  Creates and sets a font from the given arguments.
+
+  Takes as arguments values for the font family, slant, and weight, and attempts
+  to create a `Xairo.Text.Font` from them. If successful, it passes that font to
+  `set_font_face/2`, or else returns an error.
+
+  Passing `nil` for any of them will use the default value for that font option,
+  but `nil` must be explicitly passed to ensure argument parsing.
+
+  See `Xairo.Text.Font` for the allowed values for each field, as well as the default
+  values for each.
+  """
+  @spec select_font_face(Image.t(), atom(), atom(), atom()) :: image_or_error()
+  def select_font_face(image, family, slant, weight) do
+    with %Font{} = font <- Font.new(family: family, slant: slant, weight: weight) do
+      set_font_face(image, font)
+    end
+  end
+
+  @doc """
+  Sets a transformation matrix for the current font
+
+  Takes as an argument a `Xairo.Matrix` and sets it as the affine transform matrix
+  for the current font face.
+
+  See `Xairo.Matrix` for a description of the struct and its fields.
+  """
+  @spec set_font_matrix(Image.t(), Matrix.t()) :: image_or_error()
+  native_fn(:set_font_matrix, [matrix])
 end

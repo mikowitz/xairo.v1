@@ -40,5 +40,8 @@ defmodule Xairo.Native do
 
   def text_extents(_i, _str), do: error()
 
+  def set_font_face(_i, _f), do: error()
+  def set_font_matrix(_i, _m), do: error()
+
   defp error, do: :erlang.nif_error(:nif_not_loaded)
 end

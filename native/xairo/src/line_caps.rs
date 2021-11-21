@@ -3,7 +3,7 @@ use crate::atoms;
 
 use rustler::Atom;
 use cairo::LineCap;
-use crate::atoms::system;
+use crate::AtomToString;
 
 rustler::atoms! {
     default,
@@ -22,15 +22,12 @@ fn set_line_cap(image: ImageArc, line_cap: Atom) -> XairoResult {
     }
 }
 
-fn match_line_cap(line_cap: Atom) -> Result<LineCap, Atom> {
-    if line_cap == default() || line_cap == butt() {
-        Ok(LineCap::Butt)
-    } else if line_cap == square() {
-        Ok(LineCap::Square)
-    } else if line_cap == round() {
-        Ok(LineCap::Round)
-    } else {
-        Err(system::badarg())
+fn match_line_cap(line_cap: Atom) -> Result<LineCap, rustler::Error> {
+    match &line_cap.to_string()[..] {
+        "default" | "butt" => Ok(LineCap::Butt),
+        "square" => Ok(LineCap::Square),
+        "round" => Ok(LineCap::Round),
+        _ => Err(rustler::Error::BadArg)
     }
 }
 

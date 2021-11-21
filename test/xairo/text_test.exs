@@ -8,7 +8,7 @@ defmodule Xairo.TextTest do
 
   test "basic text operations" do
     image =
-      Xairo.Image.new(100, 50, 3)
+      Xairo.new_image(100, 50, 3)
       |> Xairo.set_color(1, 1, 1)
       |> Xairo.paint()
       |> Xairo.set_color(0, 0, 0)
@@ -37,5 +37,31 @@ defmodule Xairo.TextTest do
     |> Xairo.close_path()
     |> Xairo.stroke()
     |> assert_image("text.png")
+  end
+
+  test "font manipulation" do
+    bold =
+      Xairo.Text.Font.new(
+        family: :serif,
+        weight: :bold
+      )
+
+    matrix = Xairo.Matrix.new(xx: 10, yx: 2, xy: -5, yy: 15, xt: 3, yt: 10)
+
+    Xairo.new_image(100, 100, 2)
+    |> Xairo.set_color(1, 1, 1)
+    |> Xairo.paint()
+    |> Xairo.set_color(0.5, 0, 1)
+    |> Xairo.move_to({20, 20})
+    |> Xairo.show_text("hello")
+    |> Xairo.set_font_size(25)
+    |> Xairo.select_font_face(:serif, :italic, :bold)
+    |> Xairo.move_to({20, 50})
+    |> Xairo.show_text("hello")
+    |> Xairo.set_font_face(bold)
+    |> Xairo.set_font_matrix(matrix)
+    |> Xairo.move_to({20, 60})
+    |> Xairo.show_text("hello")
+    |> assert_image("fonts.png")
   end
 end
