@@ -512,4 +512,5 @@ dependencies = [
  "png",
  "rustler",
  "rustler_codegen",
+ "thiserror",
 ]

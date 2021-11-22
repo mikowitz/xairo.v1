@@ -1,19 +1,19 @@
 use crate::shapes::Point;
 use crate::color::Rgba;
-use crate::xairo_image::{ImageArc, XairoResult};
-use cairo::LinearGradient;
+use crate::xairo_image::{ImageArc, ImageResult};
+use crate::error::Error;
 
 #[derive(Debug,NifStruct)]
 #[module = "Xairo.Pattern.LinearGradient"]
-pub struct XairoLinearGradient {
+pub struct LinearGradient {
     pub start_point: Point,
     pub stop_point: Point,
     pub color_stops: Vec<(Rgba, f64)>
 }
 
 #[rustler::nif]
-fn set_linear_gradient_source(image: ImageArc, gradient: XairoLinearGradient) -> XairoResult {
-    let lg = LinearGradient::new(
+fn set_linear_gradient_source(image: ImageArc, gradient: LinearGradient) -> ImageResult {
+    let lg = cairo::LinearGradient::new(
         gradient.start_point.x,
         gradient.start_point.y,
         gradient.stop_point.x,
@@ -25,9 +25,8 @@ fn set_linear_gradient_source(image: ImageArc, gradient: XairoLinearGradient) ->
         lg.add_color_stop_rgba(position, r, g, b, a);
     }
 
-    if image.context.set_source(&lg).is_ok() {
-        Ok(image)
-    } else {
-        Err(crate::atoms::system::badarg())
+    match image.context.set_source(&lg) {
+        Ok(_) => Ok(image),
+        Err(_) => Err(Error::SetSource("linear gradient"))
     }
 }

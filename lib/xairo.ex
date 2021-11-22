@@ -124,10 +124,10 @@ defmodule Xairo do
   @typedoc """
   A 2-element tuple representing an error.
 
-  The first element is always `:error`, and the second is an atom defining
+  The first element is always `:error`, and the second is a string defining
   the error context.
   """
-  @type error :: {:error, atom()}
+  @type error :: {:error, String.t()}
 
   @typedoc """
   Shorthand for the API return type.
