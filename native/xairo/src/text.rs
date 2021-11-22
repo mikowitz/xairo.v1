@@ -1,26 +1,39 @@
-use crate::xairo_image::{ImageArc, XairoResult};
-use crate::atoms;
-use rustler::Atom;
-use crate::AtomToString;
-use cairo::{FontSlant, FontWeight};
+use crate::xairo_image::ImageArc;
+use crate::error::Error;
 
-rustler::atoms! {
-    serif, sans, cursive, fantasy, monospace,
-    normal, italic, oblique,
-    bold
+#[derive(Copy,Clone,Debug,NifUnitEnum)]
+pub enum FontFamily {
+    Serif,
+    Sans,
+    Cursive,
+    Fantasy,
+    Monospace
 }
 
-#[derive(Debug,NifStruct)]
+#[derive(Copy,Clone,Debug,NifUnitEnum)]
+pub enum FontSlant {
+    Normal,
+    Italic,
+    Oblique
+}
+
+#[derive(Copy,Clone,Debug,NifUnitEnum)]
+pub enum FontWeight {
+    Normal,
+    Bold
+}
+
+#[derive(Copy,Clone,Debug,NifStruct)]
 #[module="Xairo.Text.Font"]
 pub struct Font {
-    pub family: Atom,
-    pub slant: Atom,
-    pub weight: Atom,
+    pub family: FontFamily,
+    pub slant: FontSlant,
+    pub weight: FontWeight,
 }
 
 #[derive(Debug,NifStruct)]
 #[module = "Xairo.Text.Extents"]
-pub struct TextExtents {
+pub struct Extents {
     pub text: String,
     pub font_size: f64,
     pub x_bearing: f64,
@@ -33,24 +46,21 @@ pub struct TextExtents {
 
 
 #[rustler::nif]
-fn set_font_size(image: ImageArc, font_size: f64) -> XairoResult {
+fn set_font_size(image: ImageArc, font_size: f64) -> ImageArc {
     image.context.set_font_size(font_size);
-    Ok(image)
+    image
 }
 
 #[rustler::nif]
-fn show_text(image: ImageArc, text: &str) -> XairoResult {
-    if image.context.show_text(text).is_ok() {
-        Ok(image)
-    } else {
-        Err(atoms::system::badarg())
-    }
+fn show_text(image: ImageArc, text: &str) -> ImageArc {
+    image.context.show_text(text).unwrap();
+    image
 }
 
 #[rustler::nif]
-fn text_extents(image: ImageArc, text: &str) -> Result<TextExtents, Atom> {
+fn text_extents(image: ImageArc, text: &str) -> Result<Extents, Error> {
     if let Ok(extents) = image.context.text_extents(text) {
-        Ok(TextExtents {
+        Ok(Extents {
             text: text.to_string(),
             // a bit of a hack, since this assumes a non-sheared font matrix
             // but it'll do for now
@@ -63,46 +73,43 @@ fn text_extents(image: ImageArc, text: &str) -> Result<TextExtents, Atom> {
             y_advance: extents.y_advance,
         })
     } else {
-        Err(atoms::system::badarg())
+        Err(Error::TextExtents)
     }
 }
 
 #[rustler::nif]
-fn set_font_face(image: ImageArc, font: Font) -> XairoResult {
-    let family = match_font_family(font.family).unwrap();
-    let slant = match_font_slant(font.slant).unwrap();
-    let weight = match_font_weight(font.weight).unwrap();
+fn set_font_face(image: ImageArc, font: Font) -> ImageArc {
+    let family = match_font_family(font.family);
+    let slant = match_font_slant(font.slant);
+    let weight = match_font_weight(font.weight);
 
-    let font_face = cairo::FontFace::toy_create(&family, slant, weight);
+    let font_face = cairo::FontFace::toy_create(family, slant, weight).unwrap();
 
-    if let Ok(font_face) = font_face {
-        image.context.set_font_face(&font_face);
-        Ok(image)
-    } else {
-        Err(atoms::system::badarg())
+    image.context.set_font_face(&font_face);
+    image
+}
+
+fn match_font_slant(slant: FontSlant) -> cairo::FontSlant {
+    match slant {
+        FontSlant::Normal => cairo::FontSlant::Normal,
+        FontSlant::Italic => cairo::FontSlant::Italic,
+        FontSlant::Oblique => cairo::FontSlant::Oblique
     }
 }
 
-fn match_font_slant(slant: Atom) -> Result<FontSlant, rustler::Error> {
-    match &slant.to_string()[..] {
-        "normal" => Ok(FontSlant::Normal),
-        "italic" => Ok(FontSlant::Italic),
-        "oblique" => Ok(FontSlant::Oblique),
-        _ => Err(rustler::Error::BadArg)
+fn match_font_weight(weight: FontWeight) -> cairo::FontWeight {
+    match weight {
+        FontWeight::Normal => cairo::FontWeight::Normal,
+        FontWeight::Bold => cairo::FontWeight::Bold
     }
 }
 
-fn match_font_weight(weight: Atom) -> Result<FontWeight, rustler::Error> {
-    match &weight.to_string()[..] {
-        "normal" => Ok(FontWeight::Normal),
-        "bold" => Ok(FontWeight::Bold),
-        _ => Err(rustler::Error::BadArg)
-    }
-}
-
-fn match_font_family(family: Atom) -> Result<String, rustler::Error> {
-    match &family.to_string()[..] {
-        "serif" | "sans" | "cursive" | "fantasy" | "monospace" => Ok(family.to_string()),
-        _ => Err(rustler::Error::BadArg)
+fn match_font_family(family: FontFamily) -> &'static str {
+    match family {
+        FontFamily::Serif => "serif",
+        FontFamily::Sans => "sans",
+        FontFamily::Cursive => "cursive",
+        FontFamily::Fantasy => "fantasy",
+        FontFamily::Monospace => "monospace"
     }
 }

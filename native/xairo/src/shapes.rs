@@ -1,13 +1,13 @@
-use crate::xairo_image::{ImageArc, XairoResult};
+use crate::xairo_image::ImageArc;
 
-#[derive(Debug,NifStruct)]
+#[derive(Copy,Clone,Debug,NifStruct)]
 #[module = "Xairo.Point"]
 pub struct Point {
     pub x: f64,
     pub y: f64
 }
 
-#[derive(Debug,NifStruct)]
+#[derive(Copy,Clone,Debug,NifStruct)]
 #[module = "Xairo.Arc"]
 pub struct Arc {
     pub center: Point,
@@ -16,7 +16,7 @@ pub struct Arc {
     pub stop_angle: f64
 }
 
-#[derive(Debug,NifStruct)]
+#[derive(Copy,Clone,Debug,NifStruct)]
 #[module = "Xairo.Curve"]
 pub struct Curve {
     pub first_control_point: Point,
@@ -24,7 +24,7 @@ pub struct Curve {
     pub curve_end: Point,
 }
 
-#[derive(Debug,NifStruct)]
+#[derive(Copy,Clone,Debug,NifStruct)]
 #[module = "Xairo.Rectangle"]
 pub struct Rectangle {
     pub corner: Point,
@@ -40,14 +40,14 @@ pub struct Dashes {
 }
 
 #[rustler::nif]
-fn set_dash(image: ImageArc, dashes: Dashes) -> XairoResult {
+fn set_dash(image: ImageArc, dashes: Dashes) -> ImageArc {
     image.context.set_dash(&dashes.dashes, dashes.offset);
-    Ok(image)
+    image
 }
 
 #[rustler::nif]
-fn set_line_width(image: ImageArc, line_width: f64) -> XairoResult {
+fn set_line_width(image: ImageArc, line_width: f64) -> ImageArc {
     image.context.set_line_width(line_width);
-    Ok(image)
+    image
 }
 

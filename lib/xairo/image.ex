@@ -66,20 +66,19 @@ defmodule Xairo.Image do
   @spec new(number(), number(), number() | nil) :: __MODULE__.t()
   def new(width, height, scale \\ 1.0)
       when is_integer(width) and is_integer(height) and is_number(scale) do
-    with scale <- scale * 1.0,
-         scaled_width <- round(scale * width),
-         scaled_height <- round(scale * height),
-         {:ok, resource} <- Xairo.Native.new_image(scaled_width, scaled_height) do
-      Xairo.Native.scale(resource, scale, scale)
+    scale = scale * 1.0
+    scaled_width = round(scale * width)
+    scaled_height = round(scale * height)
+    {:ok, resource} = Xairo.Native.new_image(scaled_width, scaled_height)
+    Xairo.Native.scale(resource, scale, scale)
 
-      %__MODULE__{
-        width: width,
-        height: height,
-        scale: scale,
-        resource: resource,
-        reference: make_ref()
-      }
-    end
+    %__MODULE__{
+      width: width,
+      height: height,
+      scale: scale,
+      resource: resource,
+      reference: make_ref()
+    }
   end
 
   defimpl Inspect do

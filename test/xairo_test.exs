@@ -13,6 +13,20 @@ defmodule XairoTest do
     {:ok, %{image: image}}
   end
 
+  test "error handling for bad filename" do
+    assert {:error, "Error creating file at nope/nope/nope.png"} ==
+             Xairo.new_image(100, 100)
+             |> Xairo.save_image("nope/nope/nope.png")
+  end
+
+  test "proper return for valid filename" do
+    %Xairo.Image{} =
+      Xairo.new_image(100, 100)
+      |> Xairo.save_image("yep.png")
+
+    :ok = File.rm("yep.png")
+  end
+
   test "can create and save an empty image" do
     Xairo.new_image(100, 100)
     |> assert_image("empty.png")

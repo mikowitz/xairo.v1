@@ -1,12 +1,12 @@
 #[macro_use]
 extern crate rustler_codegen;
-use rustler::{Atom, Env, Term};
+use rustler::{Env, Term};
 
-mod atoms;
 mod color;
 mod drawing;
-mod line_caps;
-mod line_joins;
+mod error;
+mod line_cap;
+mod line_join;
 mod linear_gradient;
 mod matrix;
 mod mesh;
@@ -15,16 +15,6 @@ mod shapes;
 mod text;
 mod xairo_image;
 use xairo_image::XairoImage;
-
-trait AtomToString {
-    fn to_string(&self) -> String;
-}
-
-impl AtomToString for Atom {
-    fn to_string(&self) -> String {
-        format!("{:?}", self)
-    }
-}
 
 rustler::init!(
     "Elixir.Xairo.Native",
@@ -52,8 +42,8 @@ rustler::init!(
         shapes::set_dash,
         shapes::set_line_width,
 
-        line_caps::set_line_cap,
-        line_joins::set_line_join,
+        line_cap::set_line_cap,
+        line_join::set_line_join,
 
         linear_gradient::set_linear_gradient_source,
         radial_gradient::set_radial_gradient_source,
