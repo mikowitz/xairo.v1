@@ -43,11 +43,8 @@ fn draw_paths<'a>(mesh: &'a cairo::Mesh, side_paths: &[SidePath]) -> &'a cairo::
         match path {
             SidePath::Point(point) => mesh.line_to(point.x, point.y),
             SidePath::Curve(curve) => {
-                mesh.curve_to(
-                    curve.first_control_point.x, curve.first_control_point.y,
-                    curve.second_control_point.x, curve.second_control_point.y,
-                    curve.curve_end.x, curve.curve_end.y
-                );
+                let ((x1, y1), (x2, y2), (x3, y3)) = curve.to_tuple();
+                mesh.curve_to(x1, y1, x2, y2, x3, y3);
             }
         }
     };

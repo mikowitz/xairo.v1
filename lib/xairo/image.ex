@@ -5,7 +5,7 @@ defmodule Xairo.Image do
 
   In addition to a reference to the C resource, it stores information about the
   `width`, `height`, and `scale` of the cairo image. The width and height are
-  stored as unscaled so that they can be used in calculations of imagespace
+  stored as unscaled so that they can be used in calculations of userspace
   while drawing, while ensuring that they are correctly scaled on the generated
   image.
 

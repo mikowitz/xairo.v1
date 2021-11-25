@@ -5,7 +5,6 @@ defmodule Xairo.Native do
 
   def new_image(_w, _h), do: error()
   def save_image(_i, _f), do: error()
-  def scale(_i, _sx, _sy), do: error()
 
   def move_to(_i, _p), do: error()
   def line_to(_i, _p), do: error()
@@ -20,14 +19,14 @@ defmodule Xairo.Native do
   def set_line_join(_i, _lj), do: error()
   def set_dash(_i, _d), do: error()
 
-  def rel_line_to(_i, _dx, _dy), do: error()
-  def rel_move_to(_i, _dx, _dy), do: error()
+  def rel_line_to(_i, _v), do: error()
+  def rel_move_to(_i, _v), do: error()
 
   def arc(_i, _a), do: error()
   def arc_negative(_, _a), do: error()
 
   def curve_to(_i, _c), do: error()
-  def rel_curve_to(_i, _x1, _y1, _x2, _y2, _x3, _y3), do: error()
+  def rel_curve_to(_i, _c), do: error()
 
   def rectangle(_i, _r), do: error()
 
@@ -42,6 +41,19 @@ defmodule Xairo.Native do
 
   def set_font_face(_i, _f), do: error()
   def set_font_matrix(_i, _m), do: error()
+
+  def scale(_i, _sx, _sy), do: error()
+  def translate(_i, _dx, _dy), do: error()
+  def rotate(_i, _r), do: error()
+  def transform(_i, _m), do: error()
+  def identity_matrix(_i), do: error()
+
+  def set_matrix(_i, _m), do: error()
+  def get_matrix(_i), do: error()
+  def user_to_device(_i, _p), do: error()
+  def user_to_device_distance(_i, _v), do: error()
+  def device_to_user(_i, _p), do: error()
+  def device_to_user_distance(_i, _v), do: error()
 
   defp error, do: :erlang.nif_error(:nif_not_loaded)
 end

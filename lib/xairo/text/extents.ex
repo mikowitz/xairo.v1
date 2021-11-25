@@ -2,7 +2,7 @@ defmodule Xairo.Text.Extents do
   @moduledoc """
   Models the extents for a text string.
 
-  These extents describe a rectangle in imagespace around the rendered portion of the text,
+  These extents describe a rectangle in userspace around the rendered portion of the text,
   as well as the amounts by which the x and y coordinates of the current point would be advanced
   by passing the text to `Xairo.show_text/2`.
 

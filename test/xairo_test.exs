@@ -2,7 +2,7 @@ defmodule XairoTest do
   use ExUnit.Case, async: true
   import Xairo.Helpers.ImageHelpers
 
-  alias Xairo.{Dashes, Point}
+  alias Xairo.{Dashes, Matrix, Point, Rectangle}
 
   setup do
     image =
@@ -166,8 +166,8 @@ defmodule XairoTest do
     image
     |> Xairo.set_color(0.5, 0, 1)
     |> Xairo.move_to({10, 10})
-    |> Xairo.rel_line_to(40, 40)
-    |> Xairo.rel_move_to(20, 0)
+    |> Xairo.rel_line_to({40, 40})
+    |> Xairo.rel_move_to({20, 0})
     |> Xairo.line_to({90, 90})
     |> Xairo.stroke()
     |> assert_image("relative.png")
@@ -192,7 +192,7 @@ defmodule XairoTest do
     |> Xairo.curve_to({80, 20}, {90, 80}, {80, 90})
     |> Xairo.stroke()
     |> Xairo.move_to(Point.new(20, 20))
-    |> Xairo.rel_curve_to(20, -20, 50, 50, -10, 70)
+    |> Xairo.rel_curve_to({20, -20}, {50, 50}, {-10, 70})
     |> Xairo.stroke()
     |> assert_image("curves.png")
   end
@@ -206,5 +206,26 @@ defmodule XairoTest do
     |> Xairo.rectangle({30, 40}, 60, 40)
     |> Xairo.fill()
     |> assert_image("rectangles.png")
+  end
+
+  test "transformations", %{image: image} do
+    image
+    |> Xairo.set_color(0, 0, 0)
+    |> draw_rectangle()
+    |> Xairo.translate(40, 40)
+    |> draw_rectangle()
+    |> Xairo.rotate(:math.pi() / 6)
+    |> draw_rectangle()
+    |> Xairo.transform(Matrix.new(xx: 3, yy: 3, yt: -40))
+    |> draw_rectangle()
+    |> Xairo.identity_matrix()
+    |> draw_rectangle()
+    |> assert_image("transforms.png")
+  end
+
+  defp draw_rectangle(image) do
+    image
+    |> Xairo.rectangle(Rectangle.new({10, 10}, 20, 20))
+    |> Xairo.stroke()
   end
 end

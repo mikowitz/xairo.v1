@@ -10,7 +10,7 @@ defmodule Xairo do
   will be useful here
 
 
-  ### Imagespace and scale
+  ### Userspace and scale
 
   A new image is created with `new_image/3`. This takes as its first two arguments
   the width and height of the image, with an optional third argument that sets
@@ -20,7 +20,7 @@ defmodule Xairo do
 
       iex> Xairo.new_image(100, 100, 2.0)
 
-  will create an image with relative imagespace of 100x100 pixels, but a true,
+  will create an image with relative userspace of 100x100 pixels, but a true,
   rendered size of 200x200. This means that while drawing on the empty image
   surface, you would draw within the coordinates [0,100]x[0,100], but when
   rendered to an image file, all those coordinates would be scaled up by a
@@ -30,13 +30,13 @@ defmodule Xairo do
 
   would render to a file as a line from (20,20) to (180, 180).
 
-  By drawing in imagespace coordinates, this allows you to create an image at a
+  By drawing in userspace coordinates, this allows you to create an image at a
   smaller scale for rapid iteration, but easily scale it up to a higher
   resolution for a finished product without needing to recalculate every
   plotted coordinate.
 
   The `Xairo.Image` struct stores `width` and `height` as their unscaled values,
-  allowing the user to calculate against them properly in imagespace, while
+  allowing the user to calculate against them properly in userspace, while
   ensuring the final scaled image will render correctly.
 
   ### How cairo renders images
@@ -49,9 +49,9 @@ defmodule Xairo do
   * `move_to/2`
   * `rel_move_to/3`
 
-  `move_to/2` takes as its second parameter an absolute coordinate in imagespace
-  (see above for an explanation), while `rel_move_to/2` takes `x` and `y` values
-  relative to the previosu current point.
+  `move_to/2` takes as its second parameter an absolute coordinate in userspace
+  (see above for an explanation), while `rel_move_to/2` takes a vector defining
+  the distance to the new point relative to the previous current point.
 
   Once a current point has been set, the path can be appended to by using any of
   these functions
@@ -62,7 +62,7 @@ defmodule Xairo do
   * `arc/2` / `arc/5`
   * `arc_negative/2` / `arc_negative/5`
   * `curve_to/2` / `curve_to/4`
-  * `rel_curve_to/7`
+  * `rel_curve_to/2` / `rel_curve_to/4`
 
   A path may be built up as large as desired, using these functions as well as
   the functions above for moving the current point. However, nothing will
@@ -104,6 +104,67 @@ defmodule Xairo do
   after setting a color. If this function is never called, by default the
   background, when rendering to `.png`, will be transparent.
 
+  ### Modifying and displaying text
+
+  Basic text can be rendered as part of an image as well. `Xairo` provides access
+  to Cairo's "toy font" API, which is designed to provide only simple tools for
+  manipulating text. See `Xairo.Text.Font` for a complete explanation.
+
+  Text is displayed using
+
+  * `show_text/2`
+
+  Calling `show_text/2` immediately renders the text given, instead of waiting for
+  `stroke/1` or `fill/1` to be called. However, it does take the current path into account, beginning the text render at the current point, and advancing the current point after being rendered. See `Xairo.Text.Extents` for an explanation of how that distance is calculated.
+
+  A font can be set using
+
+  * `set_font_face/2`
+  * `select_font_face/4`
+
+  In additon, the size and positioning of the font can be set with
+
+  * `set_font_size/2`
+  * `set_font_matrix/2`
+
+  `set_font_matrix/2` allows setting a transformation matrix for the font face. See
+  [Transformation matrices](#module-transformation-matrices) for an explanation
+  of how to use these matrices.
+
+  ### Transformation matrices
+
+  The image context stores a "current transformation matrix" (CTM) that handles
+  an affine transformation for points rendered on the image. Only a single
+  CTM can be active at any time. When a new image is created, its CTM is
+  set to the identity matrix: a scale value of 1 in the x and y directions,
+  and 0 rotation, shearing, or translation.
+
+  If `new_image/3` is called with a scale value, the CTM will be scaled by that
+  value in both the x and y directions.
+
+  The following functions update the CTM, applying their transformation after any
+  existing transformations:
+
+  * `scale/3`
+  * `translate/3`
+  * `rotate/2`
+  * `transform/2`
+
+  These functions will replace the CTM with a new matrix
+
+  * `set_matrix/2`
+  * `identity_matrix/1`
+
+  You can also retrieve a `Xairo.Matrix` holding the current CTM by calling
+
+  * `get_matrix/1`
+
+  #### Other uses for `Xairo.Matrix`
+
+  Matrices can also be used to perform affine transformations on fonts and text by calling
+
+  * `set_font_matrix/2`
+
   """
 
   @typedoc """
@@ -112,12 +173,12 @@ defmodule Xairo do
   @type or_nil(a) :: a | nil
 
   @typedoc """
-  A 2-element tuple of numbers representing an {x, y} coordinate in imagespace.
+  A 2-element tuple of numbers representing an {x, y} coordinate in userspace.
   """
   @type coordinate :: {number(), number()}
 
   @typedoc """
-  Union type shorthand for representing a fixed point in imagespace
+  Union type shorthand for representing a fixed point in userspace
   """
   @type point :: Xairo.Point.t() | coordinate()
 
@@ -140,7 +201,21 @@ defmodule Xairo do
   import Xairo.NativeFn
 
   alias Xairo.Native
-  alias Xairo.{Arc, Curve, Dashes, Image, Matrix, Pattern, Point, RGBA, Rectangle, Text.Font}
+
+  alias Xairo.{
+    Arc,
+    Curve,
+    Dashes,
+    Image,
+    Matrix,
+    Pattern,
+    Point,
+    RGBA,
+    Rectangle,
+    Text.Font,
+    Vector
+  }
+
   alias Pattern.{LinearGradient, RadialGradient, Mesh}
 
   @doc """
@@ -210,11 +285,12 @@ defmodule Xairo do
 
   """
   @spec move_to(Image.t(), Xairo.point()) :: image_or_error()
-  def move_to(%Image{} = image, {x, y}) do
-    with point <- Point.new(x, y), do: move_to(image, point)
+  def move_to(%Image{} = image, point) do
+    with point <- Point.from(point) do
+      Xairo.Native.move_to(image.resource, point)
+      image
+    end
   end
-
-  native_fn(:move_to, [point])
 
   @doc """
   Draws a line to the given `point`.
@@ -380,7 +456,7 @@ defmodule Xairo do
   Moves to a point relative to the current point.
 
   The point moved to is at a distance of {`dx`, `dy`} from
-  the previous current point in imagespace and makes this
+  the previous current point in userspace and makes this
   new point the current point.
 
   ## Example
@@ -393,11 +469,16 @@ defmodule Xairo do
 
   would result in the new current for the image at {20, 35}.
   """
-  @spec rel_move_to(Image.t(), number(), number()) :: image_or_error()
-  native_fn(:rel_move_to, [{dx, Float}, {dy, Float}])
+  @spec rel_move_to(Image.t(), Vector.t()) :: image_or_error()
+  def rel_move_to(%Image{} = image, vector) do
+    with vector <- Vector.from(vector) do
+      Xairo.Native.rel_move_to(image.resource, vector)
+      image
+    end
+  end
 
   @doc """
-  Draws a line from the current point to a point offset from it by `{dx, dy}` in imagespace.
+  Draws a line from the current point to a point offset from it by `{dx, dy}` in userspace.
 
   ## Example
 
@@ -409,8 +490,13 @@ defmodule Xairo do
 
   adds a line from {10, 10} to {20, 35} to the path.
   """
-  @spec rel_line_to(Image.t(), number(), number()) :: image_or_error()
-  native_fn(:rel_line_to, [{dx, Float}, {dy, Float}])
+  @spec rel_line_to(Image.t(), Vector.t()) :: image_or_error()
+  def rel_line_to(%Image{} = image, vector) do
+    with vector <- Vector.from(vector) do
+      Xairo.Native.rel_line_to(image.resource, vector)
+      image
+    end
+  end
 
   @doc """
   Draws the defined `arc` clockwise on the `image` surface.
@@ -531,16 +617,18 @@ defmodule Xairo do
   All values are relative to the *current point* of the path at the time this
   function is called, not to the previous point defined by the function arguments.
   """
-  @spec rel_curve_to(Image.t(), number(), number(), number(), number(), number(), number()) ::
-          image_or_error()
-  native_fn(:rel_curve_to, [
-    {cx1, Float},
-    {cy1, Float},
-    {cx2, Float},
-    {cy2, Float},
-    {cx3, Float},
-    {cy3, Float}
-  ])
+  @spec rel_curve_to(Image.t(), Vector.t(), Vector.t(), Vector.t()) :: image_or_error
+  def rel_curve_to(%Image{} = image, vector1, vector2, vector3) do
+    with vector1 <- Vector.from(vector1),
+         vector2 <- Vector.from(vector2),
+         vector3 <- Vector.from(vector3),
+         curve <- Curve.new(vector1, vector2, vector3) do
+      rel_curve_to(image, curve)
+    end
+  end
+
+  @spec rel_curve_to(Image.t(), Curve.t()) :: image_or_error()
+  native_fn(:rel_curve_to, [curve])
 
   @doc """
   Adds the rectangle defined by the `t:Xairo.Rectangle.t/0` argument to the current path.
@@ -672,4 +760,79 @@ defmodule Xairo do
   """
   @spec set_font_matrix(Image.t(), Matrix.t()) :: image_or_error()
   native_fn(:set_font_matrix, [matrix])
+
+  @doc """
+  Scales the image by the given amounts along the x and y axes.
+
+  See [userspace and scale](#module-userspace-and-scale) in the docs above
+  for a full discussion of how scaling works and how it is called on every image
+  created by `new_image/3`.
+
+  """
+  @spec scale(Image.t(), number(), number()) :: image_or_error()
+  native_fn(:scale, [{sx, Float}, {sy, Float}])
+
+  @doc """
+  Shifts the origin of the current transformation matrix by {dx, dy} in userspace.
+
+  This is applied after any existng transformations already applied to the image space.
+
+  ## Example
+
+      iex> Xairo.translate(image, 20, 20)
+
+  After calling this function, all coordinates passed to `move_to/2`, `line_to/2`, etc.,
+  will be shifted 20 pixels (in userspace) right and down.
+  """
+  @spec translate(Image.t(), number(), number()) :: image_or_error()
+  native_fn(:translate, [{dx, Float}, {dy, Float}])
+
+  @doc """
+  Adds a rotation of `rad` radians to the current transformation matrix.
+
+  This is applied after any existing transformations of the image space.
+
+  Positive values rotate counterclockwise (from the positive X axis to the positive Y axis), and
+  negative values rotate clockwise.
+  """
+  @spec rotate(Image.t(), number()) :: image_or_error()
+  native_fn(:rotate, [{rad, Float}])
+
+  @doc """
+  Applies the given matrix to the context's current transformation matrix as an additional transformation.
+
+  This new transformation takes place after all existing transformations on the current matrix.
+  """
+  @spec transform(Image.t(), Matrix.t()) :: image_or_error()
+  native_fn(:transform, [matrix])
+
+  @doc """
+  Resets the context's matrix to the identity matrix.
+
+  This removes all scaling, rotation, and translation from the context. It is
+  equivalent to passing `Matrix.new()` to `set_matrix/2`
+
+  This means that any scaling you applied as part of `new_image/3` will be removed, and
+  so if you wish to keep working at that original scale, you'll need to call `scale/3` again
+  with the desired scale.
+  """
+  @spec identity_matrix(Image.t()) :: image_or_error()
+  native_fn(:identity_matrix)
+
+  @doc """
+  Sets the context's matrix.
+
+  This overrides all existing transformations
+  """
+  @spec set_matrix(Image.t(), Matrix.t()) :: image_or_error()
+  native_fn(:set_matrix, [matrix])
+
+  @doc """
+  Returns a `Xairo.Matrix` representing the image's current transformation matrix.
+  """
+  @spec get_matrix(Image.t()) :: Matrix.t()
+  def get_matrix(%Image{} = image) do
+    %Matrix{} = matrix = Xairo.Native.get_matrix(image.resource)
+    matrix
+  end
 end
