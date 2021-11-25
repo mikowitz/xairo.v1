@@ -13,6 +13,7 @@ mod mesh;
 mod radial_gradient;
 mod shapes;
 mod text;
+mod transformations;
 mod xairo_image;
 use xairo_image::XairoImage;
 
@@ -21,7 +22,6 @@ rustler::init!(
     [
         xairo_image::new_image,
         xairo_image::save_image,
-        xairo_image::scale,
 
         drawing::move_to,
         drawing::rel_move_to,
@@ -55,6 +55,18 @@ rustler::init!(
         text::set_font_face,
 
         matrix::set_font_matrix,
+        matrix::set_matrix,
+        matrix::get_matrix,
+        matrix::user_to_device,
+        matrix::user_to_device_distance,
+        matrix::device_to_user,
+        matrix::device_to_user_distance,
+
+        transformations::translate,
+        transformations::rotate,
+        transformations::transform,
+        transformations::identity_matrix,
+        transformations::scale,
     ],
     load=on_load
 );

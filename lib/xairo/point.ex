@@ -1,6 +1,6 @@
 defmodule Xairo.Point do
   @moduledoc """
-  Models a two-dimensional point in imagespace.
+  Models a two-dimensional point in userspace.
 
   Ensures that `x` and `y` are stored as floats to match Rust's type expectations
 
@@ -8,6 +8,9 @@ defmodule Xairo.Point do
       #Point<(1.0, 2.0)>
 
   """
+
+  alias Xairo.Image
+
   defstruct [:x, :y]
 
   @type t :: %__MODULE__{
@@ -16,7 +19,7 @@ defmodule Xairo.Point do
         }
 
   @doc """
-  Creates a two-dimensional point positioned absolutely in imagespace.
+  Creates a two-dimensional point positioned absolutely in userspace.
 
   ## Examples
 
@@ -63,6 +66,32 @@ defmodule Xairo.Point do
 
   def from(x, y) when is_number(x) and is_number(y) do
     __MODULE__.new(x, y)
+  end
+
+  @doc """
+  Converts a point from userspace to image/device space.
+
+  This operation uses the image's current transformation matrix to make the calculation.
+  """
+  @spec user_to_device(__MODULE__.t(), Image.t()) :: __MODULE__.t() | Xairo.error()
+  def user_to_device(%__MODULE__{} = point, %Image{} = image) do
+    with {:ok, %__MODULE__{} = point} <-
+           Xairo.Native.user_to_device(image.resource, point) do
+      point
+    end
+  end
+
+  @doc """
+  Converts a point from image/device space to userspace.
+
+  This operation uses the image's current transformation matrix to make the calculation.
+  """
+  @spec device_to_user(__MODULE__.t(), Image.t()) :: __MODULE__.t() | Xairo.error()
+  def device_to_user(%__MODULE__{} = point, %Image{} = image) do
+    with {:ok, %__MODULE__{} = point} <-
+           Xairo.Native.device_to_user(image.resource, point) do
+      point
+    end
   end
 
   defimpl Inspect do

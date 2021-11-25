@@ -8,6 +8,13 @@ pub struct Point {
 }
 
 #[derive(Copy,Clone,Debug,NifStruct)]
+#[module = "Xairo.Vector"]
+pub struct Vector {
+    pub x: f64,
+    pub y: f64
+}
+
+#[derive(Copy,Clone,Debug,NifStruct)]
 #[module = "Xairo.Arc"]
 pub struct Arc {
     pub center: Point,
@@ -16,12 +23,37 @@ pub struct Arc {
     pub stop_angle: f64
 }
 
+#[derive(Copy,Clone,Debug,NifUntaggedEnum)]
+pub enum CurveControlPoint {
+    Point(Point),
+    Vector(Vector)
+}
+
+impl CurveControlPoint {
+    pub fn to_tuple(self) -> (f64, f64) {
+        match self {
+            CurveControlPoint::Point(point) => (point.x, point.y),
+            CurveControlPoint::Vector(vector) => (vector.x, vector.y)
+        }
+    }
+}
+
 #[derive(Copy,Clone,Debug,NifStruct)]
 #[module = "Xairo.Curve"]
 pub struct Curve {
-    pub first_control_point: Point,
-    pub second_control_point: Point,
-    pub curve_end: Point,
+    pub first_control_point: CurveControlPoint,
+    pub second_control_point: CurveControlPoint,
+    pub curve_end: CurveControlPoint,
+}
+
+impl Curve {
+    pub fn to_tuple(self) -> ((f64, f64), (f64, f64), (f64, f64)) {
+        (
+            self.first_control_point.to_tuple(),
+            self.second_control_point.to_tuple(),
+            self.curve_end.to_tuple()
+        )
+    }
 }
 
 #[derive(Copy,Clone,Debug,NifStruct)]

@@ -102,7 +102,7 @@ defmodule Xairo.Pattern.Mesh do
   @doc """
   Initializes a new mesh pattern with a start point.
 
-  Returns a `t:Xairo.Mesh.t/0` struct with its C0 coordinate set in imagespace.
+  Returns a `t:Xairo.Mesh.t/0` struct with its C0 coordinate set in userspace.
 
   ## Example
 
@@ -202,7 +202,7 @@ defmodule Xairo.Pattern.Mesh do
   Adds a control point for the given corner.
 
   Takes as arguments, in addition to the `t:Xairo.Pattern.Mesh.t/0` struct, the
-  index of the corner 0..3, and the coordinates (in imagespace) of the control
+  index of the corner 0..3, and the coordinates (in userspace) of the control
   point.
 
   These control points further affect the blending of the colors in the mesh.

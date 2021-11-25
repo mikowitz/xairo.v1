@@ -4,7 +4,7 @@ defmodule Xairo.Pattern.RadialGradient do
 
   A radial gradient requires 3 pieces of data:
 
-  - Two circles, each defined by a center coordinate and radius in imagespace,
+  - Two circles, each defined by a center coordinate and radius in userspace,
     defining the radial along which the gradient is drawn
   - a list of pairs of {`t:Xairo.RGBA.t/0`, offset} tuples, where the offset is
     a numeric value in the range [0.0, 1.0] that defines where along the

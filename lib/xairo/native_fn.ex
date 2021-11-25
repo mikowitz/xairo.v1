@@ -33,6 +33,7 @@ defmodule Xairo.NativeFn do
   end
 
   defp signature_arg({:point, _, _} = arg), do: signature_arg(arg, :Point)
+  defp signature_arg({:vector, _, _} = arg), do: signature_arg(arg, :Vector)
   defp signature_arg({:rgba, _, _} = arg), do: signature_arg(arg, :RGBA)
   defp signature_arg({:arc, _, _} = arg), do: signature_arg(arg, :Arc)
   defp signature_arg({:curve, _, _} = arg), do: signature_arg(arg, :Curve)

@@ -4,7 +4,7 @@ defmodule Xairo.Rectangle do
 
   The struct stores the origin (top left) corner of the rectangle
   as a `t:Xairo.Point.t/0`, and a width and height, all defined in
-  absolute imagespace.
+  absolute userspace.
 
   Given a rectangle
 
@@ -46,7 +46,7 @@ defmodule Xairo.Rectangle do
       iex> Rectangle.new({10, 10}, 20, 20)
 
   creates a rectangle with a top left corner at {10, 10}, and a bottom right
-  corner at {30, 30}, in absolute imagespace.
+  corner at {30, 30}, in absolute userspace.
   """
   @spec new(Xairo.point(), number(), number()) :: __MODULE__.t()
   def new(corner, width, height) when is_number(width) and is_number(height) do

@@ -2,7 +2,7 @@ defmodule Xairo.Arc do
   @moduledoc """
   Models an arc that can be drawn onto an image.
 
-  The `t:Xairo.Arc.t/0` struct stores a center coordinate and radius in absolute imagespace,
+  The `t:Xairo.Arc.t/0` struct stores a center coordinate and radius in absolute userspace,
   and the start and stop angles of the arc, both defined in radians.
 
   When the `t:Xairo.Arc.t/0` is passed to `Xairo.arc/2` the arc is drawn clockwise from the

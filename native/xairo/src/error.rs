@@ -17,6 +17,10 @@ pub enum Error {
     SetSource(&'static str),
     #[error("Error fetching text extents")]
     TextExtents,
+    #[error("Error fetching translated distance vector")]
+    TranslatedVector,
+    #[error("Error fetching translated point")]
+    TranslatedPoint,
 }
 
 impl rustler::Encoder for Error {
