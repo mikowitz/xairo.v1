@@ -9,6 +9,21 @@ defmodule Xairo do
   Some words about how the C cairo library understands image space and rendering
   will be useful here
 
+  ### Image types
+
+  `Xairo` allows creating and saving images in `.png` and `.svg` format. Because of how
+  the underlying C library manages different filetypes, the API has separate functions
+  for creating images of each type, but afterwards the same drawing functions can be used
+  for either image type.
+
+  `new_image/3` creates an image that will be saved as a PNG, taking values for width, height, and an optional scale (defaults to 1.0). The width for PNG images is given in pixels.
+
+  `new_svg_image/4` creates an image that will be saved as an SVG, taking values for the
+  filename, width, height, and an optional `Keyword` list for setting the scale of the image and the document unit. The document unit determines the unit in which the given width and height are measured. It defaults to a "point", but can be changed during image initialization
+  or later via `set_document_unit/2`.
+
+  The following discussions of userspace, scale, and transformations apply to both types
+  of images. I have used the PNG `Xairo.Image` in examples below, but they would all hold true for `Xairo.SvgImage` structs as well, replacing "pixel" with the image struct's document unit.
 
   ### Userspace and scale
 
@@ -57,7 +72,7 @@ defmodule Xairo do
   these functions
 
   * `line_to/2`
-  * `rel_line_to/3`
+  * `rel_line_to/2`
   * `rectangle/2` / `rectangle/4`
   * `arc/2` / `arc/5`
   * `arc_negative/2` / `arc_negative/5`
@@ -191,12 +206,17 @@ defmodule Xairo do
   @type error :: {:error, String.t()}
 
   @typedoc """
+  Shorthand for a valid image type
+  """
+  @type image :: Xairo.Image.t() | Xairo.SvgImage.t()
+
+  @typedoc """
   Shorthand for the API return type.
 
   Indicates a function either returns a `t:Xairo.Image.t/0` struct or an
   `t:error/0` tuple.
   """
-  @type image_or_error :: Xairo.Image.t() | error()
+  @type image_or_error :: image() | error()
 
   import Xairo.NativeFn
 
@@ -212,6 +232,7 @@ defmodule Xairo do
     Point,
     RGBA,
     Rectangle,
+    SvgImage,
     Text.Font,
     Vector
   }
@@ -235,9 +256,14 @@ defmodule Xairo do
       #Image<100x100@2.0 #Reference<0.123.456,789>>
 
   """
-  @spec new_image(number, number, number | nil) :: image_or_error()
+  @spec new_image(number(), number(), number() | nil) :: image_or_error()
   def new_image(width, height, scale \\ 1.0) do
     Image.new(width, height, scale)
+  end
+
+  @spec new_svg_image(String.t(), number(), number(), Keyword.t() | nil) :: image_or_error()
+  def new_svg_image(filename, width, height, opts \\ []) do
+    SvgImage.new(filename, width, height, opts)
   end
 
   @doc """
@@ -255,7 +281,7 @@ defmodule Xairo do
       {:error, :file_creation_error}
 
   """
-  @spec save_image(Image.t(), String.t()) :: image_or_error()
+  @spec save_image(image(), String.t()) :: image_or_error()
   native_fn(:save_image, [filename])
 
   @doc """
@@ -284,8 +310,8 @@ defmodule Xairo do
       #Image<100x100@2.0 #Reference<0.123.456.789>>
 
   """
-  @spec move_to(Image.t(), Xairo.point()) :: image_or_error()
-  def move_to(%Image{} = image, point) do
+  @spec move_to(image(), Xairo.point()) :: image_or_error()
+  def move_to(%{resource: _} = image, point) do
     with point <- Point.from(point) do
       Xairo.Native.move_to(image.resource, point)
       image
@@ -313,8 +339,8 @@ defmodule Xairo do
       #Image<100x100@2.0 #Reference<0.123.456.789>>
 
   """
-  @spec line_to(Image.t(), Xairo.point()) :: image_or_error()
-  def line_to(%Image{} = image, {x, y}) do
+  @spec line_to(image(), Xairo.point()) :: image_or_error()
+  def line_to(%{resource: _} = image, {x, y}) do
     with point <- Point.new(x, y), do: line_to(image, point)
   end
 
@@ -332,7 +358,7 @@ defmodule Xairo do
 
   or uses the default values for each of these as determined by cairo.
   """
-  @spec stroke(Image.t()) :: image_or_error()
+  @spec stroke(image()) :: image_or_error()
   native_fn(:stroke)
 
   @doc """
@@ -352,13 +378,13 @@ defmodule Xairo do
   To accomplish this, you would need to duplicate the path, calling `fill/1` the
   first time, and `stroke/1` the second time after setting the desired color.
   """
-  @spec fill(Image.t()) :: image_or_error()
+  @spec fill(image()) :: image_or_error()
   native_fn(:fill)
 
   @doc """
   Fills the entirety of the `image` surface with the currently set color.
   """
-  @spec paint(Image.t()) :: image_or_error()
+  @spec paint(image()) :: image_or_error()
   native_fn(:paint)
 
   @doc """
@@ -369,15 +395,15 @@ defmodule Xairo do
   will not be used until `stroke/1`, `fill/1` or `paint/1` is called, at which
   point the most recent color set will be used.
   """
-  @spec set_color(Image.t(), RGBA.t()) :: image_or_error()
+  @spec set_color(image(), RGBA.t()) :: image_or_error()
   native_fn(:set_color, [rgba])
 
   @doc """
   Calls `set_color/2` with the given `image` and an `t:Xairo.RGBA.t/0` struct
   constructed from the remaining arguments.
   """
-  @spec set_color(Image.t(), number(), number(), number(), number()) :: image_or_error()
-  def set_color(%Image{} = image, red, green, blue, alpha \\ 1.0) do
+  @spec set_color(image(), number(), number(), number(), number()) :: image_or_error()
+  def set_color(%{resource: _} = image, red, green, blue, alpha \\ 1.0) do
     with %RGBA{} = rgba <- RGBA.new(red, green, blue, alpha) do
       set_color(image, rgba)
     end
@@ -390,7 +416,7 @@ defmodule Xairo do
   `fill/1` is called, only the most recent call to this function will be in
   effect.
   """
-  @spec set_line_width(Image.t(), number()) :: image_or_error()
+  @spec set_line_width(image(), number()) :: image_or_error()
   native_fn(:set_line_width, [{width, Float}])
 
   @doc """
@@ -403,7 +429,7 @@ defmodule Xairo do
   - `:round` creates a round line ending centered at the start/end point
   - `:butt` begins/ends the line exactly at the start/end point
   """
-  @spec set_line_cap(Image.t(), atom()) :: image_or_error()
+  @spec set_line_cap(image(), atom()) :: image_or_error()
   native_fn(:set_line_cap, [cap])
 
   @doc """
@@ -416,7 +442,7 @@ defmodule Xairo do
   - `:bevel` creates a cut-off join, at half the set line width from the join point
   - `:miter` creates a sharp, angled, corner
   """
-  @spec set_line_join(Image.t(), atom()) :: image_or_error()
+  @spec set_line_join(image(), atom()) :: image_or_error()
   native_fn(:set_line_join, [join])
 
   @doc """
@@ -425,15 +451,15 @@ defmodule Xairo do
   See the documentation for `Xairo.Dashes` for a detailed description of how
   the data from the `Xairo.Dashes` struct is parsed and used.
   """
-  @spec set_dash(Image.t(), Dashes.t()) :: image_or_error()
+  @spec set_dash(image(), Dashes.t()) :: image_or_error()
   native_fn(:set_dash, [dashes])
 
   @doc """
   Calls `set_dash/2` with the `image` and a `t:Xairo.Dashes.t/0` constructed
   from the remaining arguments.
   """
-  @spec set_dash(Image.t(), [number()], number()) :: image_or_error()
-  def set_dash(%Image{} = image, dashes, offset) do
+  @spec set_dash(image(), [number()], number()) :: image_or_error()
+  def set_dash(%{resource: _} = image, dashes, offset) do
     with %Dashes{} = dashes <- Dashes.new(dashes, offset) do
       set_dash(image, dashes)
     end
@@ -449,7 +475,7 @@ defmodule Xairo do
       #Image<100x100@2.0 #Reference<0.123.456.789>>
 
   """
-  @spec close_path(Image.t()) :: image_or_error()
+  @spec close_path(image()) :: image_or_error()
   native_fn(:close_path)
 
   @doc """
@@ -469,8 +495,8 @@ defmodule Xairo do
 
   would result in the new current for the image at {20, 35}.
   """
-  @spec rel_move_to(Image.t(), Vector.t()) :: image_or_error()
-  def rel_move_to(%Image{} = image, vector) do
+  @spec rel_move_to(image(), Vector.t()) :: image_or_error()
+  def rel_move_to(%{resource: _} = image, vector) do
     with vector <- Vector.from(vector) do
       Xairo.Native.rel_move_to(image.resource, vector)
       image
@@ -490,8 +516,8 @@ defmodule Xairo do
 
   adds a line from {10, 10} to {20, 35} to the path.
   """
-  @spec rel_line_to(Image.t(), Vector.t()) :: image_or_error()
-  def rel_line_to(%Image{} = image, vector) do
+  @spec rel_line_to(image(), Vector.t()) :: image_or_error()
+  def rel_line_to(%{resource: _} = image, vector) do
     with vector <- Vector.from(vector) do
       Xairo.Native.rel_line_to(image.resource, vector)
       image
@@ -515,14 +541,14 @@ defmodule Xairo do
       #Image<100x100@2.0 #Reference<0.123.456.789>>
 
   """
-  @spec arc(Image.t(), Arc.t()) :: image_or_error()
+  @spec arc(image(), Arc.t()) :: image_or_error()
   native_fn(:arc, [arc])
 
   @doc """
   Calls `arc/2` with the given `image`, and an `t:Xairo.Arc.t/0` constructed from the remaining arguments.
   """
-  @spec arc(Image.t(), Xairo.point(), number(), number(), number()) :: image_or_error()
-  def arc(%Image{} = image, center, radius, start_angle, stop_angle) do
+  @spec arc(image(), Xairo.point(), number(), number(), number()) :: image_or_error()
+  def arc(%{resource: _} = image, center, radius, start_angle, stop_angle) do
     with %Arc{} = arc <- Arc.new(center, radius, start_angle, stop_angle) do
       arc(image, arc)
     end
@@ -550,8 +576,8 @@ defmodule Xairo do
   @doc """
   Calls `arc_negative/2` with the given `image`, and an `t:Xairo.Arc.t/0` constructed from the remaining arguments.
   """
-  @spec arc_negative(Image.t(), Xairo.point(), number(), number(), number()) :: image_or_error()
-  def arc_negative(%Image{} = image, center, radius, start_angle, stop_angle) do
+  @spec arc_negative(image(), Xairo.point(), number(), number(), number()) :: image_or_error()
+  def arc_negative(%{resource: _} = image, center, radius, start_angle, stop_angle) do
     with %Arc{} = arc <- Arc.new(center, radius, start_angle, stop_angle) do
       arc_negative(image, arc)
     end
@@ -561,8 +587,13 @@ defmodule Xairo do
   Calls `curve_to/2` with the given `image` and a `t:Xairo.Curve.t/0` constructed
   from the remaining arguments.
   """
-  @spec curve_to(Image.t(), Xairo.point(), Xairo.point(), Xairo.point()) :: image_or_error()
-  def curve_to(%Image{} = image, first_control_point, second_control_point, curve_end) do
+  @spec curve_to(image(), Xairo.point(), Xairo.point(), Xairo.point()) :: image_or_error()
+  def curve_to(
+        %{resource: _} = image,
+        first_control_point,
+        second_control_point,
+        curve_end
+      ) do
     with curve <- Curve.new(first_control_point, second_control_point, curve_end) do
       curve_to(image, curve)
     end
@@ -595,7 +626,7 @@ defmodule Xairo do
       iex> Xairo.curve_to(image, curve)
 
   """
-  @spec curve_to(Image.t(), Curve.t()) :: image_or_error()
+  @spec curve_to(image(), Curve.t()) :: image_or_error()
   native_fn(:curve_to, [curve])
 
   @doc """
@@ -617,8 +648,8 @@ defmodule Xairo do
   All values are relative to the *current point* of the path at the time this
   function is called, not to the previous point defined by the function arguments.
   """
-  @spec rel_curve_to(Image.t(), Vector.t(), Vector.t(), Vector.t()) :: image_or_error
-  def rel_curve_to(%Image{} = image, vector1, vector2, vector3) do
+  @spec rel_curve_to(image(), Vector.t(), Vector.t(), Vector.t()) :: image_or_error
+  def rel_curve_to(%{resource: _} = image, vector1, vector2, vector3) do
     with vector1 <- Vector.from(vector1),
          vector2 <- Vector.from(vector2),
          vector3 <- Vector.from(vector3),
@@ -627,7 +658,7 @@ defmodule Xairo do
     end
   end
 
-  @spec rel_curve_to(Image.t(), Curve.t()) :: image_or_error()
+  @spec rel_curve_to(image(), Curve.t()) :: image_or_error()
   native_fn(:rel_curve_to, [curve])
 
   @doc """
@@ -652,15 +683,15 @@ defmodule Xairo do
   |> Xairo.line_to({10, 10})
   ```
   """
-  @spec rectangle(Image.t(), Rectangle.t()) :: image_or_error()
+  @spec rectangle(image(), Rectangle.t()) :: image_or_error()
   native_fn(:rectangle, [rectangle])
 
   @doc """
   Calls `rectangle/2` with the given image and a `t:Xairo.Rectangle.t/0`
   constructed from the remaining arguments.
   """
-  @spec rectangle(Image.t(), Xairo.point(), number(), number()) :: image_or_error()
-  def rectangle(%Image{} = image, corner, width, height) do
+  @spec rectangle(image(), Xairo.point(), number(), number()) :: image_or_error()
+  def rectangle(%{resource: _} = image, corner, width, height) do
     with rect <- Rectangle.new(corner, width, height), do: rectangle(image, rect)
   end
 
@@ -677,18 +708,18 @@ defmodule Xairo do
   it so that it can be set as the source with this function. All desired
   colors stops must be set before the source is set.
   """
-  @spec set_source(Image.t(), Pattern.pattern()) :: image_or_error()
-  def set_source(%Image{} = image, %LinearGradient{} = gradient) do
+  @spec set_source(image(), Pattern.pattern()) :: image_or_error()
+  def set_source(%{resource: _} = image, %LinearGradient{} = gradient) do
     Native.set_linear_gradient_source(image.resource, gradient)
     image
   end
 
-  def set_source(%Image{} = image, %RadialGradient{} = gradient) do
+  def set_source(%{resource: _} = image, %RadialGradient{} = gradient) do
     Native.set_radial_gradient_source(image.resource, gradient)
     image
   end
 
-  def set_source(%Image{} = image, %Mesh{} = mesh) do
+  def set_source(%{resource: _} = image, %Mesh{} = mesh) do
     Native.set_mesh_source(image.resource, mesh)
     image
   end
@@ -700,7 +731,7 @@ defmodule Xairo do
   is called again. If this function is not called at all before the first calls to `show_text/2`,
   the font size defaults to 10.0
   """
-  @spec set_font_size(Image.t(), number()) :: image_or_error()
+  @spec set_font_size(image(), number()) :: image_or_error()
   native_fn(:set_font_size, [{font_size, Float}])
 
   @doc """
@@ -715,7 +746,7 @@ defmodule Xairo do
 
   See `Xairo.Text.Extents` for more details.
   """
-  @spec show_text(Image.t(), String.t()) :: image_or_error()
+  @spec show_text(image(), String.t()) :: image_or_error()
   native_fn(:show_text, [text])
 
   @doc """
@@ -727,7 +758,7 @@ defmodule Xairo do
 
   See `Xairo.Text.Font` for a discussion of the font struct.
   """
-  @spec set_font_face(Image.t(), Font.t()) :: image_or_error()
+  @spec set_font_face(image(), Font.t()) :: image_or_error()
   native_fn(:set_font_face, [font])
 
   @doc """
@@ -743,8 +774,8 @@ defmodule Xairo do
   See `Xairo.Text.Font` for the allowed values for each field, as well as the default
   values for each.
   """
-  @spec select_font_face(Image.t(), atom(), atom(), atom()) :: image_or_error()
-  def select_font_face(image, family, slant, weight) do
+  @spec select_font_face(image(), atom(), atom(), atom()) :: image_or_error()
+  def select_font_face(%{resource: _} = image, family, slant, weight) do
     with %Font{} = font <- Font.new(family: family, slant: slant, weight: weight) do
       set_font_face(image, font)
     end
@@ -758,7 +789,7 @@ defmodule Xairo do
 
   See `Xairo.Matrix` for a description of the struct and its fields.
   """
-  @spec set_font_matrix(Image.t(), Matrix.t()) :: image_or_error()
+  @spec set_font_matrix(image(), Matrix.t()) :: image_or_error()
   native_fn(:set_font_matrix, [matrix])
 
   @doc """
@@ -769,7 +800,7 @@ defmodule Xairo do
   created by `new_image/3`.
 
   """
-  @spec scale(Image.t(), number(), number()) :: image_or_error()
+  @spec scale(image(), number(), number()) :: image_or_error()
   native_fn(:scale, [{sx, Float}, {sy, Float}])
 
   @doc """
@@ -784,7 +815,7 @@ defmodule Xairo do
   After calling this function, all coordinates passed to `move_to/2`, `line_to/2`, etc.,
   will be shifted 20 pixels (in userspace) right and down.
   """
-  @spec translate(Image.t(), number(), number()) :: image_or_error()
+  @spec translate(image(), number(), number()) :: image_or_error()
   native_fn(:translate, [{dx, Float}, {dy, Float}])
 
   @doc """
@@ -795,7 +826,7 @@ defmodule Xairo do
   Positive values rotate counterclockwise (from the positive X axis to the positive Y axis), and
   negative values rotate clockwise.
   """
-  @spec rotate(Image.t(), number()) :: image_or_error()
+  @spec rotate(image(), number()) :: image_or_error()
   native_fn(:rotate, [{rad, Float}])
 
   @doc """
@@ -803,7 +834,7 @@ defmodule Xairo do
 
   This new transformation takes place after all existing transformations on the current matrix.
   """
-  @spec transform(Image.t(), Matrix.t()) :: image_or_error()
+  @spec transform(image(), Matrix.t()) :: image_or_error()
   native_fn(:transform, [matrix])
 
   @doc """
@@ -816,7 +847,7 @@ defmodule Xairo do
   so if you wish to keep working at that original scale, you'll need to call `scale/3` again
   with the desired scale.
   """
-  @spec identity_matrix(Image.t()) :: image_or_error()
+  @spec identity_matrix(image()) :: image_or_error()
   native_fn(:identity_matrix)
 
   @doc """
@@ -824,15 +855,24 @@ defmodule Xairo do
 
   This overrides all existing transformations
   """
-  @spec set_matrix(Image.t(), Matrix.t()) :: image_or_error()
+  @spec set_matrix(image(), Matrix.t()) :: image_or_error()
   native_fn(:set_matrix, [matrix])
 
   @doc """
   Returns a `Xairo.Matrix` representing the image's current transformation matrix.
   """
-  @spec get_matrix(Image.t()) :: Matrix.t()
-  def get_matrix(%Image{} = image) do
+  @spec get_matrix(image()) :: Matrix.t()
+  def get_matrix(%{resource: _} = image) do
     %Matrix{} = matrix = Xairo.Native.get_matrix(image.resource)
     matrix
   end
+
+  @doc """
+  Sets the document unit type for a `Xairo.SvgImage`.
+
+  See `t:Xairo.SvgImage.svg_unit/0` for a list of the possible valid values
+  for the `unit` argument.
+  """
+  @spec set_document_unit(SvgImage.t(), SvgImage.svg_unit()) :: SvgImage.t()
+  native_fn(:set_document_unit, [unit])
 end

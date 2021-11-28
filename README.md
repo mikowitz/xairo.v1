@@ -34,7 +34,9 @@ Currently, Xairo supports
   * Bézier curves
   * rectangles
 * creating solid, gradient, and mesh color sources
-* saving images as *.png files
+* adding simple text to an image
+* manipulating image paths and text with transformation matrices
+* saving images in *.png or *.svg format
 
 For full documentation, see the [`Xairo` module](lib/xairo.ex).
 
