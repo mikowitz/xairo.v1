@@ -6,6 +6,9 @@ defmodule Xairo.Native do
   def new_image(_w, _h), do: error()
   def save_image(_i, _f), do: error()
 
+  def new_svg_image(_f, _w, _h), do: error()
+  def set_document_unit(_i, _u), do: error()
+
   def move_to(_i, _p), do: error()
   def line_to(_i, _p), do: error()
   def stroke(_i), do: error()

@@ -15,14 +15,14 @@ defmodule Xairo.Image do
 
   As an example, the following code
 
-      iex> image = Image.new(100, 100, 1)
-      iex> image |> Xairo.move_to(10, 10) |> Xairo.line_to(90, 90)
+      iex> image = Image.new(100, 100)
+      iex> image |> Xairo.move_to({10, 10}) |> Xairo.line_to({90, 90})
 
   will produce a 100x100 pixel image with a line from (10, 10) to (90, 90),
   and this code
 
       iex> image = Image.new(100, 100, 3)
-      iex> image |> Xairo.move_to(10, 10) |> Xairo.line_to(90, 90)
+      iex> image |> Xairo.move_to({10, 10}) |> Xairo.line_to({90, 90})
 
   will produce a 300x300 pixel image with a line from (30, 30) to (270, 270).
 

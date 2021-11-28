@@ -21,7 +21,9 @@ rustler::init!(
     "Elixir.Xairo.Native",
     [
         xairo_image::new_image,
+        xairo_image::new_svg_image,
         xairo_image::save_image,
+        xairo_image::set_document_unit,
 
         drawing::move_to,
         drawing::rel_move_to,

@@ -21,6 +21,8 @@ pub enum Error {
     TranslatedVector,
     #[error("Error fetching translated point")]
     TranslatedPoint,
+    #[error("Mismatched file type")]
+    FileTypeMismatch,
 }
 
 impl rustler::Encoder for Error {
