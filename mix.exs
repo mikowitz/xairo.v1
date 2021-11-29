@@ -9,8 +9,7 @@ defmodule Xairo.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       elixirc_paths: compiler_paths(Mix.env()),
-      dialyzer: [plt_add_apps: [:ex_unit]],
-      plt_core_path: "_build/#{Mix.env()}"
+      dialyzer: dialyzer()
     ]
   end
 
@@ -34,4 +33,12 @@ defmodule Xairo.MixProject do
 
   defp compiler_paths(:test), do: ["test/helpers"] ++ compiler_paths(:prod)
   defp compiler_paths(_), do: ["lib"]
+
+  defp dialyzer do
+    [
+      plt_core_path: "priv/plts",
+      plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
+      plt_add_apps: [:ex_unit]
+    ]
+  end
 end
