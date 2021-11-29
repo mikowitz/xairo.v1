@@ -61,7 +61,7 @@ jobs:
         id: rust-cache
         with:
           working-directory: ./native/xairo
-          key: ${{ matrix.otp }}-${{ matrix.elixir }}
+          key: rs-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('Cargo.lock') }}
 
       - name: mix-cache
         uses: actions/cache@v2
@@ -79,7 +79,7 @@ jobs:
           path: |
             _build/test/*.plt
             _build/test/*.plt.dash
-          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}-plt
+          key: plt-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
 
       - name: cargo build
         run: cargo build
