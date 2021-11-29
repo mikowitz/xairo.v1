@@ -9,7 +9,8 @@ defmodule Xairo.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       elixirc_paths: compiler_paths(Mix.env()),
-      dialyzer: [plt_add_apps: [:ex_unit]]
+      dialyzer: [plt_add_apps: [:ex_unit]],
+      plt_core_path: "_build/#{Mix.env()}"
     ]
   end
 
