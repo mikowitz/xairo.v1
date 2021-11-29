@@ -72,13 +72,12 @@ jobs:
             _build
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
 
-      - name: plt_cache
+      - name: plt-cache
         uses: actions/cache@v2
-        id: plt_cache
+        id: plt-cache
         with:
           path: |
-            _build/test/*.plt
-            _build/test/*.plt.dash
+            priv/plts
           key: plt-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
 
       - name: cargo build
@@ -106,5 +105,11 @@ jobs:
       - name: mix test
         run: mix test
 
+      - name: create PLTs
+        if: steps.plt-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p priv/plts
+          mix dialyzer --plt
+
       - name: mix dialyzer
-        run: mix dialyzer
+        run: mix dialyzer --no-check --halt-exit-status
