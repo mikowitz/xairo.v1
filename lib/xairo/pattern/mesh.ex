@@ -172,6 +172,10 @@ defmodule Xairo.Pattern.Mesh do
     }
   end
 
+  @doc """
+  Calls `curve_to/2` with `mesh` and a `Xairo.Curve` constructed from the
+  remaining arguments.
+  """
   @spec curve_to(__MODULE__.t(), Xairo.coordinate(), Xairo.coordinate(), Xairo.coordinate()) ::
           __MODULE__.t()
   def curve_to(%__MODULE__{} = mesh, p1, p2, p3) do

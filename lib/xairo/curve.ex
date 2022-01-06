@@ -26,9 +26,13 @@ defmodule Xairo.Curve do
   @doc """
   Creates a struct representing a cubic Bézier curve in absolute userspace.
 
-  `new/3` takes as its arguments three `t:Xairo.Point.t/0` structs, `t:Xairo.Vector.t/0` structs, or
+  `new/4` takes as its arguments three `t:Xairo.Point.t/0` structs, `t:Xairo.Vector.t/0` structs, or
   coordinate tuple pairs, which represent, respectively, the two control points
-  of the curve, and its ending point.
+  of the curve, and its ending point. The fourth, optional argument is a keyword list. Currently the
+  following keywords are supported
+
+  * `relative` (default `false`) - this specifies whether the points defined on the curve are absolute
+  in userspace, or relative to the current point of the path the curve extends.
 
   ## Example
 

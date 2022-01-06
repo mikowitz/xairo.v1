@@ -32,16 +32,14 @@ defmodule Xairo.Image do
     :resource,
     :width,
     :height,
-    :scale,
-    :reference
+    :scale
   ]
 
   @type t :: %__MODULE__{
           resource: reference(),
           width: integer(),
           height: integer(),
-          scale: number(),
-          reference: reference()
+          scale: number()
         }
 
   @doc """
@@ -76,8 +74,7 @@ defmodule Xairo.Image do
       width: width,
       height: height,
       scale: scale,
-      resource: resource,
-      reference: make_ref()
+      resource: resource
     }
   end
 
@@ -85,13 +82,13 @@ defmodule Xairo.Image do
     import Inspect.Algebra
 
     def inspect(
-          %Xairo.Image{width: width, height: height, scale: scale, reference: reference},
+          %Xairo.Image{width: width, height: height, scale: scale, resource: resource},
           opts
         ) do
       concat([
         "#Image<",
         "#{width}x#{height}@#{scale} ",
-        to_doc(reference, opts),
+        to_doc(resource, opts),
         ">"
       ])
     end

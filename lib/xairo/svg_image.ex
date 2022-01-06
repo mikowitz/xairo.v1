@@ -63,7 +63,6 @@ defmodule Xairo.SvgImage do
     :height,
     :scale,
     :unit,
-    :reference,
     :filename
   ]
 
@@ -85,7 +84,6 @@ defmodule Xairo.SvgImage do
           height: number(),
           scale: number(),
           unit: svg_unit(),
-          reference: reference(),
           filename: String.t()
         }
 
@@ -126,8 +124,7 @@ defmodule Xairo.SvgImage do
       width: width,
       height: height,
       scale: scale,
-      resource: resource,
-      reference: make_ref()
+      resource: resource
     }
   end
 
@@ -139,7 +136,7 @@ defmodule Xairo.SvgImage do
             width: width,
             height: height,
             scale: scale,
-            reference: reference,
+            resource: resource,
             unit: unit,
             filename: filename
           },
@@ -150,7 +147,7 @@ defmodule Xairo.SvgImage do
         "#{width}x#{height}@#{scale} ",
         "(#{unit})",
         filename,
-        to_doc(reference, opts),
+        to_doc(resource, opts),
         ">"
       ])
     end

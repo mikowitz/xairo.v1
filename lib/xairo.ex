@@ -2,34 +2,42 @@ defmodule Xairo do
   @moduledoc """
   The public API for creating images using the `Xairo` library.
 
-  With the exeception of `new_image/3` every API function takes a `Xairo.Image`
-  struct as its first argument, and all API functions return a `Xairo.Image`
-  struct.
+  With the exeception of `new_image/3` and `new_svg_image/4`, every API function
+  takes a `Xairo.Image` struct as its first argument, and all API functions
+  return a `Xairo.Image` struct.
 
   Some words about how the C cairo library understands image space and rendering
   will be useful here
 
   ### Image types
 
-  `Xairo` allows creating and saving images in `.png` and `.svg` format. Because of how
-  the underlying C library manages different filetypes, the API has separate functions
-  for creating images of each type, but afterwards the same drawing functions can be used
-  for either image type.
+  `Xairo` allows creating and saving images in `.png` and `.svg` format. Because
+  of how the underlying C library manages different filetypes, the API has
+  separate functions for creating images of each type, but once the image has
+  been instantiated, the same drawing functions can be used for either image
+  type.
 
-  `new_image/3` creates an image that will be saved as a PNG, taking values for width, height, and an optional scale (defaults to 1.0). The width for PNG images is given in pixels.
+  `new_image/3` creates an image that will be saved as a PNG, taking values for
+  width, height, and an optional scale (defaults to 1.0). The width for PNG
+  images is given in pixels.
 
-  `new_svg_image/4` creates an image that will be saved as an SVG, taking values for the
-  filename, width, height, and an optional `Keyword` list for setting the scale of the image and the document unit. The document unit determines the unit in which the given width and height are measured. It defaults to a "point", but can be changed during image initialization
-  or later via `set_document_unit/2`.
+  `new_svg_image/4` creates an image that will be saved as an SVG, taking values
+  for the filename, width, height, and an optional `Keyword` list for setting
+  the scale of the image and the document unit. The document unit determines the
+  unit in which the given width and height are measured. It defaults to a
+  "point", but can be changed during image initialization or later via
+  `set_document_unit/2`.
 
-  The following discussions of userspace, scale, and transformations apply to both types
-  of images. I have used the PNG `Xairo.Image` in examples below, but they would all hold true for `Xairo.SvgImage` structs as well, replacing "pixel" with the image struct's document unit.
+  The following discussions of userspace, scale, and transformations apply to
+  both types of images. I have used the PNG `Xairo.Image` in examples below,
+  but they would all hold true for `Xairo.SvgImage` structs as well, replacing
+  "pixel" with the image struct's document unit.
 
   ### Userspace and scale
 
-  A new image is created with `new_image/3`. This takes as its first two arguments
-  the width and height of the image, with an optional third argument that sets
-  the image's scale.
+  A new image is created with `new_image/3`. This takes as its first two
+  arguments the width and height of the image, with an optional third argument
+  that sets the image's scale.
 
   For example, the following command
 
@@ -99,9 +107,10 @@ defmodule Xairo do
   Because nothing is rendered until these functions are called, only the most
   recent function calls to set the path's color, line width, etc. will be taken
   into account. This means that to draw lines of different colors or widths, you
-  must create and end different paths for each one. These functions can be called
-  at any point before the path in initialized or during its extension, but if
-  called multiple times, only the final invocation will be taken into account.
+  must create and end different paths for each one. These functions can be
+  called at any point before the path in initialized or during its extension,
+  but if called multiple times, only the final invocation will be taken into
+  account.
 
   These functions are:
 
@@ -121,16 +130,19 @@ defmodule Xairo do
 
   ### Modifying and displaying text
 
-  Basic text can be rendered as part of an image as well. `Xairo` provides access
-  to Cairo's "toy font" API, which is designed to provide only simple tools for
-  manipulating text. See `Xairo.Text.Font` for a complete explanation.
+  Basic text can be rendered as part of an image as well. `Xairo` provides
+  access to Cairo's "toy font" API, which is designed to provide only simple
+  tools for manipulating text. See `Xairo.Text.Font` for a complete explanation.
 
   Text is displayed using
 
   * `show_text/2`
 
-  Calling `show_text/2` immediately renders the text given, instead of waiting for
-  `stroke/1` or `fill/1` to be called. However, it does take the current path into account, beginning the text render at the current point, and advancing the current point after being rendered. See `Xairo.Text.Extents` for an explanation of how that distance is calculated.
+  Calling `show_text/2` immediately renders the text given, instead of waiting
+  for `stroke/1` or `fill/1` to be called. However, it does take the current
+  path into account, beginning the text render at the current point, and
+  advancing the current point after being rendered. See `Xairo.Text.Extents`
+  for an explanation of how that distance is calculated.
 
   A font can be set using
 
@@ -142,23 +154,23 @@ defmodule Xairo do
   * `set_font_size/2`
   * `set_font_matrix/2`
 
-  `set_font_matrix/2` allows setting a transformation matrix for the font face. See
-  [Transformation matrices](#module-transformation-matrices) for an explanation
-  of how to use these matrices.
+  `set_font_matrix/2` allows setting a transformation matrix for the font face.
+  See [Transformation matrices](#module-transformation-matrices) for an
+  explanation of how to use these matrices.
 
   ### Transformation matrices
 
   The image context stores a "current transformation matrix" (CTM) that handles
-  an affine transformation for points rendered on the image. Only a single
-  CTM can be active at any time. When a new image is created, its CTM is
-  set to the identity matrix: a scale value of 1 in the x and y directions,
-  and 0 rotation, shearing, or translation.
+  an affine transformation for points rendered on the image. Only a single CTM
+  can be active at any time. When a new image is created, its CTM is set to the
+  identity matrix: a scale value of 1 in the x and y directions, and 0 rotation,
+  shearing, or translation.
 
   If `new_image/3` is called with a scale value, the CTM will be scaled by that
   value in both the x and y directions.
 
-  The following functions update the CTM, applying their transformation after any
-  existing transformations:
+  The following functions update the CTM, applying their transformation after
+  any existing transformations:
 
   * `scale/3`
   * `translate/3`
@@ -176,7 +188,8 @@ defmodule Xairo do
 
   #### Other uses for `Xairo.Matrix`
 
-  Matrices can also be used to perform affine transformations on fonts and text by calling
+  Matrices can also be used to perform affine transformations on fonts and text
+  by calling
 
   * `set_font_matrix/2`
 
@@ -369,9 +382,9 @@ defmodule Xairo do
   `close_path/1` has not been called, a straight line between the current
   point of the path and its origin will be created to bound the fill space.
 
-  With a simple convex path, the entirety of the path will be filled. With a more
-  complex shape, one where the path crosses over itself, cairo will determine
-  which, if any, portions to fill using an internal algorithm.
+  With a simple convex path, the entirety of the path will be filled. With a
+  more complex shape, one where the path crosses over itself, cairo will
+  determine which, if any, portions to fill using an internal algorithm.
 
   Because `set_color/2` sets the color for the stroke and fill of the path, it
   is not possible to fill a single path with a different color than its stroke.
@@ -439,7 +452,8 @@ defmodule Xairo do
   `:default`. The default value for `line_cap` in cairo is the `:miter` style.
 
   - `:round` creates a rounded join centered on the join point
-  - `:bevel` creates a cut-off join, at half the set line width from the join point
+  - `:bevel` creates a cut-off join, at half the set line width from the join
+    point
   - `:miter` creates a sharp, angled, corner
   """
   @spec set_line_join(image(), atom()) :: image_or_error()
@@ -466,8 +480,8 @@ defmodule Xairo do
   end
 
   @doc """
-  Closes the current path by drawing a straight line from the current point to the path's
-  start point.
+  Closes the current path by drawing a straight line from the current point to
+  the path's start point.
 
   ## Example
 
@@ -504,7 +518,8 @@ defmodule Xairo do
   end
 
   @doc """
-  Draws a line from the current point to a point offset from it by `{dx, dy}` in userspace.
+  Draws a line from the current point to a point offset from it by `{dx, dy}`
+  in userspace.
 
   ## Example
 
@@ -545,7 +560,8 @@ defmodule Xairo do
   native_fn(:arc, [arc])
 
   @doc """
-  Calls `arc/2` with the given `image`, and an `t:Xairo.Arc.t/0` constructed from the remaining arguments.
+  Calls `arc/2` with the given `image`, and an `t:Xairo.Arc.t/0` constructed
+  from the remaining arguments.
   """
   @spec arc(image(), Xairo.point(), number(), number(), number()) :: image_or_error()
   def arc(%{resource: _} = image, center, radius, start_angle, stop_angle) do
@@ -557,9 +573,9 @@ defmodule Xairo do
   @doc """
   Draws the defined `arc` counter-clockwise on the `image` surface.
 
-  The `arc` struct defines a `start_angle`, `stop_angle`, `center`, and `radius`.
-  This function draws the arc counter-clockwise from `start_angle` to `stop_angle` at
-  a distance of `radius` from the `center`.
+  The `arc` struct defines a `start_angle`, `stop_angle`, `center`, and
+  `radius`.  This function draws the arc counter-clockwise from `start_angle`
+  to `stop_angle` at a distance of `radius` from the `center`.
 
   If a current point is set for the active path when `arc/2` is called, a line
   will be drawn from that current point to the start of the arc.
@@ -574,7 +590,8 @@ defmodule Xairo do
   native_fn(:arc_negative, [arc])
 
   @doc """
-  Calls `arc_negative/2` with the given `image`, and an `t:Xairo.Arc.t/0` constructed from the remaining arguments.
+  Calls `arc_negative/2` with the given `image`, and an `t:Xairo.Arc.t/0`
+  constructed from the remaining arguments.
   """
   @spec arc_negative(image(), Xairo.point(), number(), number(), number()) :: image_or_error()
   def arc_negative(%{resource: _} = image, center, radius, start_angle, stop_angle) do
@@ -584,8 +601,8 @@ defmodule Xairo do
   end
 
   @doc """
-  Calls `curve_to/2` with the given `image` and a `t:Xairo.Curve.t/0` constructed
-  from the remaining arguments.
+  Calls `curve_to/2` with the given `image` and a `t:Xairo.Curve.t/0`
+  constructed from the remaining arguments.
   """
   @spec curve_to(image(), Xairo.point(), Xairo.point(), Xairo.point()) :: image_or_error()
   def curve_to(
@@ -633,8 +650,8 @@ defmodule Xairo do
   Draws a curve using coordinates relative to the current point.
 
   After the `image`, the remaining six arguments to this function are paired
-  `x` and `y` relative distances for the first control point, second control point,
-  and curve end point, respectively.
+  `x` and `y` relative distances for the first control point, second control
+  point, and curve end point, respectively.
 
   ```
   Xairo.rel_curve_to(
@@ -646,7 +663,8 @@ defmodule Xairo do
   ```
 
   All values are relative to the *current point* of the path at the time this
-  function is called, not to the previous point defined by the function arguments.
+  function is called, not to the previous point defined by the function
+  arguments.
   """
   @spec rel_curve_to(image(), Vector.t(), Vector.t(), Vector.t()) :: image_or_error
   def rel_curve_to(%{resource: _} = image, vector1, vector2, vector3) do
@@ -662,18 +680,19 @@ defmodule Xairo do
   native_fn(:rel_curve_to, [curve])
 
   @doc """
-  Adds the rectangle defined by the `t:Xairo.Rectangle.t/0` argument to the current path.
+  Adds the rectangle defined by the `t:Xairo.Rectangle.t/0` argument to the
+  current path.
 
-  The `Xairo.Rectangle` struct stores the origin (top left) corner of the rectangle, and its
-  width and height.
+  The `Xairo.Rectangle` struct stores the origin (top left) corner of the
+  rectangle, and its width and height.
 
   ## Example
 
       iex> rect = Rectangle.new(Point.new(10, 10), 30, 50)
       iex> Xairo.rectangle(image, rect)
 
-  This code will result in a rectangle with a top left corner at {10, 10} and a bottom right
-  corner at {40, 60}. It is equivalent to calling
+  This code will result in a rectangle with a top left corner at {10, 10} and a
+  bottom right corner at {40, 60}. It is equivalent to calling
 
   ```
   Xairo.move_to(image, {10, 10})
@@ -727,9 +746,9 @@ defmodule Xairo do
   @doc """
   Sets the font size for the context.
 
-  The font size set will apply to all subsequent calls to `show_text/2` until `set_font_size/2`
-  is called again. If this function is not called at all before the first calls to `show_text/2`,
-  the font size defaults to 10.0
+  The font size set will apply to all subsequent calls to `show_text/2` until
+  `set_font_size/2` is called again. If this function is not called at all
+  before the first calls to `show_text/2`, the font size defaults to 10.0.
   """
   @spec set_font_size(image(), number()) :: image_or_error()
   native_fn(:set_font_size, [{font_size, Float}])
@@ -739,10 +758,11 @@ defmodule Xairo do
 
   The text is displayed with the origin (lower left corner of the text) at the
   current point of the given path.  After `show_text/2` has been called, the
-  current point changes by the values given by `x_advance` and `y_advance` fields
-  on the given string's text extents. Generally, for all languages except some
-  East-Asian languages that have a vertical text layout, the `y_advance` will be 0,
-  and the `x_advance` will be roughly the width of the displayed text.
+  current point changes by the values given by `x_advance` and `y_advance`
+  fields on the given string's text extents. Generally, for all languages
+  except some East-Asian languages that have a vertical text layout, the
+  `y_advance` will be 0, and the `x_advance` will be roughly the width of the
+  displayed text.
 
   See `Xairo.Text.Extents` for more details.
   """
@@ -753,8 +773,8 @@ defmodule Xairo do
   Sets the current font face for the image.
 
   Takes an as argument a `t:Xairo.Text.Font.t/0` "toy" font definition
-  and uses those values to configure the font options for all subsequent calls to
-  `show_text/2`.
+  and uses those values to configure the font options for all subsequent calls
+  to `show_text/2`.
 
   See `Xairo.Text.Font` for a discussion of the font struct.
   """
@@ -771,8 +791,8 @@ defmodule Xairo do
   Passing `nil` for any of them will use the default value for that font option,
   but `nil` must be explicitly passed to ensure argument parsing.
 
-  See `Xairo.Text.Font` for the allowed values for each field, as well as the default
-  values for each.
+  See `Xairo.Text.Font` for the allowed values for each field, as well as the
+  default values for each.
   """
   @spec select_font_face(image(), atom(), atom(), atom()) :: image_or_error()
   def select_font_face(%{resource: _} = image, family, slant, weight) do
@@ -784,8 +804,8 @@ defmodule Xairo do
   @doc """
   Sets a transformation matrix for the current font
 
-  Takes as an argument a `Xairo.Matrix` and sets it as the affine transform matrix
-  for the current font face.
+  Takes as an argument a `Xairo.Matrix` and sets it as the affine transform
+  matrix for the current font face.
 
   See `Xairo.Matrix` for a description of the struct and its fields.
   """
@@ -804,16 +824,18 @@ defmodule Xairo do
   native_fn(:scale, [{sx, Float}, {sy, Float}])
 
   @doc """
-  Shifts the origin of the current transformation matrix by {dx, dy} in userspace.
+  Shifts the origin of the current transformation matrix by {dx, dy} in
+  userspace.
 
-  This is applied after any existng transformations already applied to the image space.
+  This is applied after any existng transformations already applied to the
+  userspace.
 
   ## Example
 
       iex> Xairo.translate(image, 20, 20)
 
-  After calling this function, all coordinates passed to `move_to/2`, `line_to/2`, etc.,
-  will be shifted 20 pixels (in userspace) right and down.
+  After calling this function, all coordinates passed to `move_to/2`,
+  `line_to/2`, etc., will be shifted 20 pixels (in userspace) right and down.
   """
   @spec translate(image(), number(), number()) :: image_or_error()
   native_fn(:translate, [{dx, Float}, {dy, Float}])
@@ -823,16 +845,18 @@ defmodule Xairo do
 
   This is applied after any existing transformations of the image space.
 
-  Positive values rotate counterclockwise (from the positive X axis to the positive Y axis), and
-  negative values rotate clockwise.
+  Positive values rotate counterclockwise (from the positive X axis to the
+  positive Y axis), and negative values rotate clockwise.
   """
   @spec rotate(image(), number()) :: image_or_error()
   native_fn(:rotate, [{rad, Float}])
 
   @doc """
-  Applies the given matrix to the context's current transformation matrix as an additional transformation.
+  Applies the given matrix to the context's current transformation matrix as an
+  additional transformation.
 
-  This new transformation takes place after all existing transformations on the current matrix.
+  This new transformation takes place after all existing transformations on the
+  current matrix.
   """
   @spec transform(image(), Matrix.t()) :: image_or_error()
   native_fn(:transform, [matrix])
@@ -843,9 +867,9 @@ defmodule Xairo do
   This removes all scaling, rotation, and translation from the context. It is
   equivalent to passing `Matrix.new()` to `set_matrix/2`
 
-  This means that any scaling you applied as part of `new_image/3` will be removed, and
-  so if you wish to keep working at that original scale, you'll need to call `scale/3` again
-  with the desired scale.
+  This means that any scaling you applied as part of `new_image/3` will be
+  removed, and so if you wish to keep working at that original scale, you'll
+  need to call `scale/3` again with the desired scale.
   """
   @spec identity_matrix(image()) :: image_or_error()
   native_fn(:identity_matrix)
@@ -859,7 +883,8 @@ defmodule Xairo do
   native_fn(:set_matrix, [matrix])
 
   @doc """
-  Returns a `Xairo.Matrix` representing the image's current transformation matrix.
+  Returns a `Xairo.Matrix` representing the image's current transformation
+  matrix.
   """
   @spec get_matrix(image()) :: Matrix.t()
   def get_matrix(%{resource: _} = image) do
