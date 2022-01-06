@@ -9,12 +9,16 @@ on:
 jobs:
   clippy:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: ["stable", "nightly"]
+    name: "Clippy ${{matrix.rust}}"
     steps:
       - uses: actions/checkout@v2.4.0
 
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: ${{matrix.rust}}
           components: clippy
           override: true
 
@@ -23,7 +27,7 @@ jobs:
         id: rust-cache
         with:
           working-directory: ./native/xairo
-          key: ${{ matrix.otp }}-${{ matrix.elixir }}-clippy
+          key: ${{ matrix.rust }}-clippy
 
       - name: cargo build
         run: cargo build
@@ -38,11 +42,12 @@ jobs:
     env:
       MIX_ENV: test
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    name: "[${{matrix.otp}}/${{matrix.elixir}}] CI Tests"
+    name: "[${{matrix.otp}}/${{matrix.elixir}}, ${{matrix.rust}}] CI Tests"
     strategy:
       matrix:
         otp: [22, 23, 24]
         elixir: ["1.12.3", "1.13.0-rc.0"]
+        rust: ["stable", "nightly"]
     steps:
       - uses: actions/checkout@v2.4.0
 
@@ -54,14 +59,15 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: stable
+          toolchain: ${{matrix.rust}}
+          override: true
 
       - name: rust-cache
         uses: Swatinem/rust-cache@v1
         id: rust-cache
         with:
           working-directory: ./native/xairo
-          key: rs-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('Cargo.lock') }}
+          key: rs-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ matrix.rust }}-${{ hashFiles('Cargo.lock') }}
 
       - name: mix-cache
         uses: actions/cache@v2

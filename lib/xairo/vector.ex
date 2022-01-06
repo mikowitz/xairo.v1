@@ -36,7 +36,7 @@ defmodule Xairo.Vector do
   end
 
   @doc """
-  Returns a Vector, if possible, from the arguments.
+  Returns a `Vector`, if possible, from the arguments.
 
   Argument can be any of
 
@@ -46,14 +46,14 @@ defmodule Xairo.Vector do
 
   ## Examples
 
-    iex> Vector.from(Vector.new(1, -2))
-    #Vector<(1.0, -2.0)>
+      iex> Vector.from(Vector.new(1, -2))
+      #Vector<(1.0, -2.0)>
 
-    iex> Vector.from({-3, 4})
-    #Vector<(-3.0, 4.0)>
+      iex> Vector.from({-3, 4})
+      #Vector<(-3.0, 4.0)>
 
-    iex> Vector.from(5, 6)
-    #Vector<(5.0, 6.0)>
+      iex> Vector.from(5, 6)
+      #Vector<(5.0, 6.0)>
 
   """
   @spec from(__MODULE__.t()) :: __MODULE__.t()
@@ -65,6 +65,9 @@ defmodule Xairo.Vector do
     __MODULE__.new(x, y)
   end
 
+  @doc """
+  Constructs a `Vector` from the given `x` and `y` coordinates.
+  """
   def from(x, y) when is_number(x) and is_number(y) do
     __MODULE__.new(x, y)
   end

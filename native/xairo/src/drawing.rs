@@ -62,4 +62,3 @@ fn rel_curve_to(image: ImageArc, curve: Curve) -> ImageArc {
     image.context.rel_curve_to(x1, y1, x2, y2, x3, y3);
     image
 }
-

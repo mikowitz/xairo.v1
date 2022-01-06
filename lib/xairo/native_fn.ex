@@ -16,12 +16,7 @@ defmodule Xairo.NativeFn do
 
     quote do
       def unquote(func_name)(%{resource: resource} = image, unquote_splicing(signature_args)) do
-        result =
-          apply(
-            Xairo.Native,
-            unquote(func_name),
-            [resource, unquote_splicing(applied_args)]
-          )
+        result = Xairo.Native.unquote(func_name)(resource, unquote_splicing(applied_args))
 
         case result do
           {:ok, _} -> image

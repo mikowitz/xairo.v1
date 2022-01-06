@@ -9,7 +9,39 @@ defmodule Xairo.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       elixirc_paths: compiler_paths(Mix.env()),
-      dialyzer: dialyzer()
+      dialyzer: dialyzer(),
+      docs: [
+        main: Xairo,
+        groups_for_modules: [
+          "Image Types": [
+            Xairo.Image,
+            Xairo.SvgImage
+          ],
+          Shapes: [
+            Xairo.Arc,
+            Xairo.Curve,
+            Xairo.Dashes,
+            Xairo.Point,
+            Xairo.Rectangle,
+            Xairo.Vector
+          ],
+          Color: [
+            Xairo.RGBA,
+            Xairo.Pattern,
+            Xairo.Pattern.LinearGradient,
+            Xairo.Pattern.RadialGradient,
+            Xairo.Pattern.Mesh
+          ],
+          Text: [
+            Xairo.Text,
+            Xairo.Text.Extents,
+            Xairo.Text.Font
+          ],
+          Transformation: [
+            Xairo.Matrix
+          ]
+        ]
+      ]
     ]
   end
 
