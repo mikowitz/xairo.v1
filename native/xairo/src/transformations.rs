@@ -16,7 +16,7 @@ fn rotate(image: ImageArc, rad: f64) -> ImageArc {
 
 #[rustler::nif]
 fn transform(image: ImageArc, matrix: Matrix) -> ImageArc {
-    let matrix = matrix.to_cairo_matrix();
+    let matrix = cairo::Matrix::from(matrix);
     image.context.transform(matrix);
     image
 }

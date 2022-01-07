@@ -23,6 +23,8 @@ pub enum Error {
     TranslatedPoint,
     #[error("Mismatched file type")]
     FileTypeMismatch,
+    #[error("Uninvertible matrix")]
+    UninvertibleMatrix,
 }
 
 impl rustler::Encoder for Error {
