@@ -64,6 +64,14 @@ rustler::init!(
         matrix::device_to_user,
         matrix::device_to_user_distance,
 
+        matrix::matrix_translate,
+        matrix::matrix_scale,
+        matrix::matrix_rotate,
+        matrix::matrix_invert,
+        matrix::matrix_multiply,
+        matrix::matrix_transform_point,
+        matrix::matrix_transform_distance,
+
         transformations::translate,
         transformations::rotate,
         transformations::transform,

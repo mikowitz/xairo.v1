@@ -17,13 +17,17 @@ impl Matrix {
     pub fn to_tuple(self) -> (f64, f64, f64, f64, f64, f64) {
         (self.xx, self.yy, self.xy, self.yx, self.xt, self.yt)
     }
+}
 
-    pub fn to_cairo_matrix(self) -> cairo::Matrix {
-        let (xx, yy, xy, yx, xt, yt) = self.to_tuple();
+impl From<Matrix> for cairo::Matrix {
+    fn from(matrix: Matrix) -> Self {
+        let (xx, yy, xy, yx, xt, yt) = matrix.to_tuple();
         cairo::Matrix::new(xx, yx, xy, yy, xt, yt)
     }
+}
 
-    pub fn from_cairo_matrix(matrix: cairo::Matrix) -> Self {
+impl From<cairo::Matrix> for Matrix {
+    fn from(matrix: cairo::Matrix) -> Self {
         Self {
             xx: matrix.xx,
             yy: matrix.yy,
@@ -35,17 +39,16 @@ impl Matrix {
     }
 }
 
-
 #[rustler::nif]
 fn set_font_matrix(image: ImageArc, matrix: Matrix) -> ImageArc {
-    let matrix = matrix.to_cairo_matrix();
+    let matrix = cairo::Matrix::from(matrix);
     image.context.set_font_matrix(matrix);
     image
 }
 
 #[rustler::nif]
 fn set_matrix(image: ImageArc, matrix: Matrix) -> ImageArc {
-    let matrix = matrix.to_cairo_matrix();
+    let matrix = cairo::Matrix::from(matrix);
     image.context.set_matrix(matrix);
     image
 }
@@ -53,7 +56,7 @@ fn set_matrix(image: ImageArc, matrix: Matrix) -> ImageArc {
 #[rustler::nif]
 fn get_matrix(image: ImageArc) -> Matrix {
     let matrix: cairo::Matrix = image.context.matrix();
-    Matrix::from_cairo_matrix(matrix)
+    matrix.into()
 }
 
 #[rustler::nif]
@@ -84,4 +87,56 @@ fn device_to_user_distance(image: ImageArc, vector: Vector) -> Result<Vector, Er
         Ok((x, y)) => Ok(Vector{ x, y }),
         Err(_) => Err(Error::TranslatedVector)
     }
+}
+
+#[rustler::nif]
+fn matrix_translate(matrix: Matrix, xt: f64, yt: f64) -> Matrix {
+    let mut matrix = cairo::Matrix::from(matrix);
+    matrix.translate(xt, yt);
+    matrix.into()
+}
+
+#[rustler::nif]
+fn matrix_scale(matrix: Matrix, xx: f64, yy: f64) -> Matrix {
+    let mut matrix = cairo::Matrix::from(matrix);
+    matrix.scale(xx, yy);
+    matrix.into()
+}
+
+#[rustler::nif]
+fn matrix_rotate(matrix: Matrix, radians: f64) -> Matrix {
+    let mut matrix = cairo::Matrix::from(matrix);
+    matrix.rotate(radians);
+    matrix.into()
+}
+
+#[rustler::nif]
+fn matrix_invert(matrix: Matrix) -> Result<Matrix, Error> {
+    let matrix = cairo::Matrix::from(matrix);
+    match matrix.try_invert() {
+        Ok(matrix) => Ok(matrix.into()),
+        _ => Err(Error::UninvertibleMatrix)
+    }
+}
+
+#[rustler::nif]
+fn matrix_multiply(matrix1: Matrix, matrix2: Matrix) -> Matrix {
+    let matrix1 = cairo::Matrix::from(matrix1);
+    let matrix2 = cairo::Matrix::from(matrix2);
+    let matrix3 = cairo::Matrix::multiply(&matrix1, &matrix2);
+    matrix3.into()
+}
+
+#[rustler::nif]
+fn matrix_transform_point(matrix: Matrix, point: Point) -> Point {
+    let matrix = cairo::Matrix::from(matrix);
+    let (x, y) = matrix.transform_point(point.x, point.y);
+    Point { x, y }
+}
+
+#[rustler::nif]
+fn matrix_transform_distance(matrix: Matrix, vector: Vector) -> Vector {
+    let matrix = cairo::Matrix::from(matrix);
+    let (x, y) = matrix.transform_distance(vector.x, vector.y);
+    Vector { x, y }
 }

@@ -60,6 +60,40 @@ defmodule Xairo.Matrix do
     struct(__MODULE__, opts)
   end
 
+  def identity, do: new()
+
+  def translate(%__MODULE__{} = matrix, xt, yt) do
+    Xairo.Native.matrix_translate(matrix, xt * 1.0, yt * 1.0)
+  end
+
+  def scale(%__MODULE__{} = matrix, xx, yy) do
+    Xairo.Native.matrix_scale(matrix, xx * 1.0, yy * 1.0)
+  end
+
+  def rotate(%__MODULE__{} = matrix, radians) do
+    Xairo.Native.matrix_rotate(matrix, radians * 1.0)
+  end
+
+  def invert(%__MODULE__{} = matrix) do
+    with {:ok, matrix} <- Xairo.Native.matrix_invert(matrix) do
+      matrix
+    end
+  end
+
+  def multiply(%__MODULE__{} = matrix1, %__MODULE__{} = matrix2) do
+    Xairo.Native.matrix_multiply(matrix1, matrix2)
+  end
+
+  alias Xairo.{Point, Vector}
+
+  def transform_point(%__MODULE__{} = matrix, %Point{} = point) do
+    Xairo.Native.matrix_transform_point(matrix, point)
+  end
+
+  def transform_distance(%__MODULE__{} = matrix, %Vector{} = vector) do
+    Xairo.Native.matrix_transform_distance(matrix, vector)
+  end
+
   defimpl Inspect do
     import Inspect.Algebra
 

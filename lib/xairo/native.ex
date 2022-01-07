@@ -58,5 +58,14 @@ defmodule Xairo.Native do
   def device_to_user(_i, _p), do: error()
   def device_to_user_distance(_i, _v), do: error()
 
+  def matrix_translate(_m, _xt, _yt), do: error()
+  def matrix_scale(_m, _xx, _yy), do: error()
+  def matrix_rotate(_m, _r), do: error()
+  def matrix_invert(_m), do: error()
+  def matrix_multiply(_m1, _m2), do: error()
+
+  def matrix_transform_point(_m, _p), do: error()
+  def matrix_transform_distance(_m, _v), do: error()
+
   defp error, do: :erlang.nif_error(:nif_not_loaded)
 end
