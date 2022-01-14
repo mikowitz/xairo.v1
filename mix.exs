@@ -21,6 +21,7 @@ defmodule Xairo.MixProject do
             Xairo.Arc,
             Xairo.Curve,
             Xairo.Dashes,
+            Xairo.Path,
             Xairo.Point,
             Xairo.Rectangle,
             Xairo.Vector

@@ -60,36 +60,88 @@ defmodule Xairo.Matrix do
     struct(__MODULE__, opts)
   end
 
+  @doc """
+  Returns a 3x3 identity matrix.
+
+  This is a matrix that, when any `X` is multiplied by it, will return `X`.
+  """
+  @spec identity() :: __MODULE__.t()
   def identity, do: new()
 
+  @doc """
+  Shifts the origin of the matrix by `{xt, yt}` in userspace.
+  """
+  @spec translate(__MODULE__.t(), number, number) :: __MODULE__.t()
   def translate(%__MODULE__{} = matrix, xt, yt) do
     Xairo.Native.matrix_translate(matrix, xt * 1.0, yt * 1.0)
   end
 
+  @doc """
+  Scales the matrix by the given values along the x and y axes respectively.
+  """
+  @spec scale(__MODULE__.t(), number, number) :: __MODULE__.t()
   def scale(%__MODULE__{} = matrix, xx, yy) do
     Xairo.Native.matrix_scale(matrix, xx * 1.0, yy * 1.0)
   end
 
+  @doc """
+  Rotates the matrix by `radian` radians.
+  """
+  @spec rotate(__MODULE__.t(), number) :: __MODULE__.t()
   def rotate(%__MODULE__{} = matrix, radians) do
     Xairo.Native.matrix_rotate(matrix, radians * 1.0)
   end
 
+  @doc """
+  Invert the matrix.
+
+  The resulting matrix will have the opposite transformation effect of the
+  original matrix. (*NB* scale remains unchanged by this operation)
+  """
+  @spec invert(__MODULE__.t()) :: __MODULE__.t()
   def invert(%__MODULE__{} = matrix) do
     with {:ok, matrix} <- Xairo.Native.matrix_invert(matrix) do
       matrix
     end
   end
 
+  @doc """
+  Multiplies one matrix by another.
+
+  Because of how stacking matrix operations works, `multiply/2` is not
+  commutative.
+
+  That is
+
+  ```
+  Matrix.multiply(matrix_a, matrix_b)
+  ```
+
+  will not necessarily yield the same result as
+
+  ```
+  Matrix.multiply(matrix_b, matrix_a)
+  ```
+  """
+  @spec multiply(__MODULE__.t(), __MODULE__.t()) :: __MODULE__.t()
   def multiply(%__MODULE__{} = matrix1, %__MODULE__{} = matrix2) do
     Xairo.Native.matrix_multiply(matrix1, matrix2)
   end
 
   alias Xairo.{Point, Vector}
 
+  @doc """
+  Applies the matrix to the given point, returning a transformed point.
+  """
+  @spec transform_point(__MODULE__.t(), Point.t()) :: Point.t()
   def transform_point(%__MODULE__{} = matrix, %Point{} = point) do
     Xairo.Native.matrix_transform_point(matrix, point)
   end
 
+  @doc """
+  Applies the matrix to the given vector, returning a transformed vector.
+  """
+  @spec transform_point(__MODULE__.t(), Vector.t()) :: Vector.t()
   def transform_distance(%__MODULE__{} = matrix, %Vector{} = vector) do
     Xairo.Native.matrix_transform_distance(matrix, vector)
   end

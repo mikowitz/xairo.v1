@@ -2,9 +2,8 @@ defmodule Xairo do
   @moduledoc """
   The public API for creating images using the `Xairo` library.
 
-  With the exeception of `new_image/3` and `new_svg_image/4`, every API function
-  takes a `Xairo.Image` struct as its first argument, and all API functions
-  return a `Xairo.Image` struct.
+  With only a few exceptions, every API function takes a `Xairo.Image` struct
+  as its first argument, and returns a `Xairo.Image` struct.
 
   Some words about how the C cairo library understands image space and rendering
   will be useful here
@@ -70,7 +69,7 @@ defmodule Xairo do
   functions
 
   * `move_to/2`
-  * `rel_move_to/3`
+  * `rel_move_to/2`
 
   `move_to/2` takes as its second parameter an absolute coordinate in userspace
   (see above for an explanation), while `rel_move_to/2` takes a vector defining
@@ -169,6 +168,8 @@ defmodule Xairo do
   If `new_image/3` is called with a scale value, the CTM will be scaled by that
   value in both the x and y directions.
 
+  #### Modifying matrices
+
   The following functions update the CTM, applying their transformation after
   any existing transformations:
 
@@ -176,6 +177,11 @@ defmodule Xairo do
   * `translate/3`
   * `rotate/2`
   * `transform/2`
+
+  It is also possible to create a new matrix and perform these operations
+  separately before replacing the CTM. See `Xairo.Matrix`.
+
+  #### Replacing CTM
 
   These functions will replace the CTM with a new matrix
 
@@ -504,7 +510,7 @@ defmodule Xairo do
   ```
   image
   |> Xairo.move_to({10, 10})
-  |> Xairo.rel_move_to(10, 25)
+  |> Xairo.rel_move_to({10, 25})
   ```
 
   would result in the new current for the image at {20, 35}.
@@ -900,4 +906,57 @@ defmodule Xairo do
   """
   @spec set_document_unit(SvgImage.t(), SvgImage.svg_unit()) :: SvgImage.t()
   native_fn(:set_document_unit, [unit])
+
+  @doc """
+  Copies the current path from the image and returns it as a `Xairo.Path` struct.
+  """
+  @spec copy_path(image()) :: Xairo.Path.t()
+  def copy_path(%{resource: _} = image) do
+    with {:ok, path} <- Xairo.Native.copy_path(image.resource) do
+      Xairo.Path.new(path)
+    end
+  end
+
+  @doc """
+  Copies the current path from the image replacing curves with straight line
+  segments.
+
+  The precision of the line segments is determined by the current tolerance of
+  the image. See `get_tolerance/1` and `set_tolerance/2`.
+  """
+  @spec copy_path_flat(image()) :: Xairo.Path.t()
+  def copy_path_flat(%{resource: _} = image) do
+    with {:ok, path} <- Xairo.Native.copy_path_flat(image.resource) do
+      Xairo.Path.new(path)
+    end
+  end
+
+  @doc """
+  Appends `path` to the current path of the image.
+  """
+  @spec append_path(image(), Xairo.Path.t()) :: image_or_error()
+  def append_path(%{resource: _} = image, %Xairo.Path{resource: path}) do
+    Xairo.Native.append_path(image.resource, path)
+    image
+  end
+
+  @doc """
+  Returns the current tolerance of the image.
+
+  Tolerance determines how precisely a curved line is translated into straight
+  line segments when calling `copy_path_flat/1`.
+  """
+  @spec get_tolerance(image()) :: float
+  def get_tolerance(%{resource: _} = image) do
+    Xairo.Native.get_tolerance(image.resource)
+  end
+
+  @doc """
+  Sets the tolerance of the image.
+
+  Tolerance determines how precisely a curved line is translated into straight
+  line segments when calling `copy_path_flat/1`.
+  """
+  @spec set_tolerance(image(), float) :: image_or_error()
+  native_fn(:set_tolerance, [{tolerance, Float}])
 end
