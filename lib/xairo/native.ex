@@ -67,5 +67,11 @@ defmodule Xairo.Native do
   def matrix_transform_point(_m, _p), do: error()
   def matrix_transform_distance(_m, _v), do: error()
 
+  def copy_path(_i), do: error()
+  def copy_path_flat(_i), do: error()
+  def append_path(_i, _p), do: error()
+  def get_tolerance(_i), do: error()
+  def set_tolerance(_i, _t), do: error()
+
   defp error, do: :erlang.nif_error(:nif_not_loaded)
 end

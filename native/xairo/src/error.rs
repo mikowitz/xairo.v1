@@ -25,6 +25,8 @@ pub enum Error {
     FileTypeMismatch,
     #[error("Uninvertible matrix")]
     UninvertibleMatrix,
+    #[error("Could not copy path")]
+    CopyPath,
 }
 
 impl rustler::Encoder for Error {

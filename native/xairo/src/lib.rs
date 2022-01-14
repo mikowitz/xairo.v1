@@ -10,6 +10,8 @@ mod line_join;
 mod linear_gradient;
 mod matrix;
 mod mesh;
+mod path;
+use path::XairoPath;
 mod radial_gradient;
 mod shapes;
 mod text;
@@ -77,11 +79,18 @@ rustler::init!(
         transformations::transform,
         transformations::identity_matrix,
         transformations::scale,
+
+        path::copy_path,
+        path::copy_path_flat,
+        path::append_path,
+        path::get_tolerance,
+        path::set_tolerance
     ],
     load=on_load
 );
 
 fn on_load(env: Env, _info: Term) -> bool {
     rustler::resource!(XairoImage, env);
+    rustler::resource!(XairoPath, env);
     true
 }
