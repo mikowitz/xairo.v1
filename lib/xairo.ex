@@ -238,7 +238,6 @@ defmodule Xairo do
   @type image_or_error :: image() | error()
 
   import Xairo.NativeFn
-
   alias Xairo.Native
 
   alias Xairo.{
@@ -249,14 +248,14 @@ defmodule Xairo do
     Matrix,
     Pattern,
     Point,
-    RGBA,
     Rectangle,
+    RGBA,
     SvgImage,
     Text.Font,
     Vector
   }
 
-  alias Pattern.{LinearGradient, RadialGradient, Mesh}
+  alias Pattern.{LinearGradient, Mesh, RadialGradient}
 
   @doc """
   Creates and returns a new `Xairo.Image` struct
