@@ -2,7 +2,7 @@ defmodule Xairo.TextTest do
   use ExUnit.Case, async: true
   import Xairo.Helpers.ImageHelpers
 
-  alias Xairo.{Arc, Text}
+  alias Xairo.{Arc, Matrix, Text, Text.Font}
 
   doctest Text
 
@@ -41,12 +41,12 @@ defmodule Xairo.TextTest do
 
   test "font manipulation" do
     bold =
-      Xairo.Text.Font.new(
+      Font.new(
         family: :serif,
         weight: :bold
       )
 
-    matrix = Xairo.Matrix.new(xx: 10, yx: 2, xy: -5, yy: 15, xt: 3, yt: 10)
+    matrix = Matrix.new(xx: 10, yx: 2, xy: -5, yy: 15, xt: 3, yt: 10)
 
     Xairo.new_image(100, 100, 2)
     |> Xairo.set_color(1, 1, 1)
