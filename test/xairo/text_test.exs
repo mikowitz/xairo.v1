@@ -6,6 +6,7 @@ defmodule Xairo.TextTest do
 
   doctest Text
 
+  @tag macos: false
   test "basic text operations" do
     image =
       Xairo.new_image(100, 50, 3)
@@ -39,6 +40,7 @@ defmodule Xairo.TextTest do
     |> assert_image("text.png")
   end
 
+  @tag macos: false
   test "font manipulation" do
     bold =
       Font.new(
