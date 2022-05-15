@@ -17,9 +17,17 @@ defmodule Xairo.Text do
       ...> |> Xairo.set_font_size(15)
       iex> Text.extents(image, "hello")
       #TextExtents<hello @15.0>
+
+  It also works for SVG images
+
+    iex> image = Xairo.new_svg_image("test.svg", 100, 100, scale: 2)
+    ...> |> Xairo.set_font_size(20)
+    iex> Text.extents(image, "hello")
+    #TextExtents<hello @20.0>
+
   """
-  @spec extents(Xairo.Image.t(), String.t()) :: Extents.t() | Xairo.error()
-  def extents(%Xairo.Image{} = image, text) do
-    with {:ok, %Extents{} = extents} <- Native.text_extents(image.resource, text), do: extents
+  @spec extents(Xairo.image(), String.t()) :: Extents.t() | Xairo.error()
+  def extents(%{resource: resource}, text) do
+    with {:ok, %Extents{} = extents} <- Native.text_extents(resource, text), do: extents
   end
 end
