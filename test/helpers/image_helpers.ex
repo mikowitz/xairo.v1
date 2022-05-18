@@ -33,7 +33,8 @@ defmodule Xairo.Helpers.ImageHelpers do
     expected_path = expected_path || filename
     Xairo.save_image(image)
 
-    func.(filename, Path.join("test/images/", expected_path))
+    expected_path = Path.join("test/images", expected_path)
+    func.(filename, expected_path)
 
     :ok = File.rm(filename)
   end

@@ -290,7 +290,7 @@ defmodule Xairo do
   """
   @spec save_image(image()) :: image_or_error()
   def save_image(image) do
-    with {:ok, _} <- Image.save(image), do: image
+    Image.save(image)
   end
 
   @doc """
