@@ -9,7 +9,7 @@ defmodule Xairo.TextTest do
   @tag macos: false
   test "basic text operations" do
     image =
-      Xairo.new_image(100, 50, 3)
+      Xairo.new_image("text.png", 100, 50, scale: 3)
       |> Xairo.set_color(1, 1, 1)
       |> Xairo.paint()
       |> Xairo.set_color(0, 0, 0)
@@ -37,7 +37,7 @@ defmodule Xairo.TextTest do
     |> Xairo.rel_line_to({0, extents.height})
     |> Xairo.close_path()
     |> Xairo.stroke()
-    |> assert_image("text.png")
+    |> assert_image()
   end
 
   @tag macos: false
@@ -50,7 +50,7 @@ defmodule Xairo.TextTest do
 
     matrix = Matrix.new(xx: 10, yx: 2, xy: -5, yy: 15, xt: 3, yt: 10)
 
-    Xairo.new_image(100, 100, 2)
+    Xairo.new_image("fonts.png", 100, 100, scale: 2)
     |> Xairo.set_color(1, 1, 1)
     |> Xairo.paint()
     |> Xairo.set_color(0.5, 0, 1)
@@ -64,6 +64,6 @@ defmodule Xairo.TextTest do
     |> Xairo.set_font_matrix(matrix)
     |> Xairo.move_to({20, 60})
     |> Xairo.show_text("hello")
-    |> assert_image("fonts.png")
+    |> assert_image()
   end
 end

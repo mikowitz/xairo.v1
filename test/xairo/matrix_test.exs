@@ -10,7 +10,7 @@ defmodule Xairo.MatrixTest do
   test "set matrix" do
     matrix = Matrix.new(xx: 2, yy: 3, xy: 0.8, yx: 1.8, xt: 20, yt: -20)
 
-    Xairo.new_image(100, 100)
+    Xairo.new_image("set_matrix.png", 100, 100)
     |> Xairo.set_color(1, 1, 1)
     |> Xairo.paint()
     |> Xairo.set_color(0, 0, 0)
@@ -19,12 +19,12 @@ defmodule Xairo.MatrixTest do
     |> Xairo.set_matrix(matrix)
     |> Xairo.rectangle({10, 10}, 10, 10)
     |> Xairo.stroke()
-    |> assert_image("set_matrix.png")
+    |> assert_image()
   end
 
   test "get matrix" do
     image =
-      Xairo.new_image(100, 100)
+      Xairo.new_image("get_matrix.png", 100, 100)
       |> Xairo.translate(40, 40)
       |> Xairo.rotate(:math.pi() / 6)
       |> Xairo.transform(Matrix.new(xx: 3, yy: 3, yt: -40))

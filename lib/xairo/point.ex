@@ -9,8 +9,6 @@ defmodule Xairo.Point do
 
   """
 
-  alias Xairo.Image
-
   defstruct [:x, :y]
 
   @type t :: %__MODULE__{
@@ -76,8 +74,8 @@ defmodule Xairo.Point do
 
   This operation uses the image's current transformation matrix to make the calculation.
   """
-  @spec user_to_device(__MODULE__.t(), Image.t()) :: __MODULE__.t() | Xairo.error()
-  def user_to_device(%__MODULE__{} = point, %Image{} = image) do
+  @spec user_to_device(__MODULE__.t(), Xairo.image()) :: __MODULE__.t() | Xairo.error()
+  def user_to_device(%__MODULE__{} = point, %{resource: _} = image) do
     with {:ok, %__MODULE__{} = point} <-
            Xairo.Native.user_to_device(image.resource, point) do
       point
@@ -89,8 +87,8 @@ defmodule Xairo.Point do
 
   This operation uses the image's current transformation matrix to make the calculation.
   """
-  @spec device_to_user(__MODULE__.t(), Image.t()) :: __MODULE__.t() | Xairo.error()
-  def device_to_user(%__MODULE__{} = point, %Image{} = image) do
+  @spec device_to_user(__MODULE__.t(), Xairo.image()) :: __MODULE__.t() | Xairo.error()
+  def device_to_user(%__MODULE__{} = point, %{resource: _} = image) do
     with {:ok, %__MODULE__{} = point} <-
            Xairo.Native.device_to_user(image.resource, point) do
       point

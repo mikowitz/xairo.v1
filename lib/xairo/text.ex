@@ -1,6 +1,6 @@
 defmodule Xairo.Text do
   @moduledoc """
-  Helper methods for interacting with text in a `t:Xairo.Image.t/0`
+  Helper methods for interacting with text in a `t:Xairo.image/0`
   """
 
   alias Xairo.Native
@@ -13,13 +13,13 @@ defmodule Xairo.Text do
 
   ## Example
 
-      iex> image = Xairo.new_image(100, 100, 2)
+      iex> image = Xairo.new_image("test.png", 100, 100, scale: 2)
       ...> |> Xairo.set_font_size(15)
       iex> Text.extents(image, "hello")
       #TextExtents<hello @15.0>
   """
-  @spec extents(Xairo.Image.t(), String.t()) :: Extents.t() | Xairo.error()
-  def extents(%Xairo.Image{} = image, text) do
+  @spec extents(Xairo.image(), String.t()) :: Extents.t() | Xairo.error()
+  def extents(%{resource: _} = image, text) do
     with {:ok, %Extents{} = extents} <- Native.text_extents(image.resource, text), do: extents
   end
 end

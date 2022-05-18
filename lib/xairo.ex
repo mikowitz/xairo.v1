@@ -10,26 +10,19 @@ defmodule Xairo do
 
   ### Image types
 
-  `Xairo` allows creating and saving images in `.png` and `.svg` format. Because
-  of how the underlying C library manages different filetypes, the API has
-  separate functions for creating images of each type, but once the image has
-  been instantiated, the same drawing functions can be used for either image
-  type.
+    `Xairo` allows creating and saving images in `.png`, `.svg`, `.pdf` and `.ps`
+    formats. All file formats can be created via the `new_image/4` function.
 
-  `new_image/3` creates an image that will be saved as a PNG, taking values for
-  width, height, and an optional scale (defaults to 1.0). The width for PNG
-  images is given in pixels.
+    It takes as its arguments required fields for the filename (including extension), width, and height, and an optional keyword list.
 
-  `new_svg_image/4` creates an image that will be saved as an SVG, taking values
-  for the filename, width, height, and an optional `Keyword` list for setting
-  the scale of the image and the document unit. The document unit determines the
-  unit in which the given width and height are measured. It defaults to a
-  "point", but can be changed during image initialization or later via
-  `set_document_unit/2`.
+    The keyword list can contain the following keys:
+
+    * `scale`: determines the scale of the image relative to the given width and height. See below for details on how scaling an image works.
+    * `unit`: only read when creating SVG images, this determines the document unit the width and height dimensions will be measured in, defaulting to `:point`. See `Xairo.Image.Svg` for a list of allowed units. All other image types are understood to be defined in pixel size.
 
   The following discussions of userspace, scale, and transformations apply to
-  both types of images. I have used the PNG `Xairo.Image` in examples below,
-  but they would all hold true for `Xairo.SvgImage` structs as well, replacing
+  all types of images. I have used PNG in examples below,
+  but they would all hold true for `Xairo.Image.Svg` structs as well, replacing
   "pixel" with the image struct's document unit.
 
   ### Userspace and scale
@@ -40,7 +33,7 @@ defmodule Xairo do
 
   For example, the following command
 
-      iex> Xairo.new_image(100, 100, 2.0)
+      iex> Xairo.new_image("test.png", 100, 100, scale: 2.0)
 
   will create an image with relative userspace of 100x100 pixels, but a true,
   rendered size of 200x200. This means that while drawing on the empty image
@@ -227,12 +220,13 @@ defmodule Xairo do
   @typedoc """
   Shorthand for a valid image type
   """
-  @type image :: Xairo.Image.t() | Xairo.SvgImage.t()
+  @type image ::
+          Xairo.Image.Png.t() | Xairo.Image.Svg.t() | Xairo.Image.Pdf.t() | Xairo.Image.Ps.t()
 
   @typedoc """
   Shorthand for the API return type.
 
-  Indicates a function either returns a `t:Xairo.Image.t/0` struct or an
+  Indicates a function either returns a `t:Xairo.image/0` struct or an
   `t:error/0` tuple.
   """
   @type image_or_error :: image() | error()
@@ -250,7 +244,6 @@ defmodule Xairo do
     Point,
     Rectangle,
     RGBA,
-    SvgImage,
     Text.Font,
     Vector
   }
@@ -274,33 +267,31 @@ defmodule Xairo do
       #Image<100x100@2.0 #Reference<0.123.456,789>>
 
   """
-  @spec new_image(number(), number(), number() | nil) :: image_or_error()
-  def new_image(width, height, scale \\ 1.0) do
-    Image.new(width, height, scale)
-  end
-
-  @spec new_svg_image(String.t(), number(), number(), Keyword.t() | nil) :: image_or_error()
-  def new_svg_image(filename, width, height, opts \\ []) do
-    SvgImage.new(filename, width, height, opts)
+  @spec new_image(String.t(), number(), number(), Keyword.t() | nil) :: image_or_error()
+  def new_image(filename, width, height, opts \\ []) do
+    Image.new(filename, width, height, opts)
   end
 
   @doc """
-  Saves `image` to the given location `filename` on the file system.
+    Saves `image` to the filesystem at a location matching its filename.
 
-  If `filename` contains any non-existant directories, `save_image/2` will
-  not create them, and return an error instead.
+    Saving will not create any non-extant parent directories in the filename path,
+    and will return an error tuple instead.
 
   ## Examples
 
-      iex> Xairo.save_image(image, "test.png")
+      iex> Xairo.save_image(image)
       #Image<100x100@2.0 #Reference<0.123.456.789>>
 
-      iex> Xairo.save_image(image, "non/existant/path/test.png")
+      iex> image = Xairo.new_image("non/extant/path/test.png", 200, 200)
+      iex> Xairo.save_image(image)
       {:error, :file_creation_error}
 
   """
-  @spec save_image(image(), String.t()) :: image_or_error()
-  native_fn(:save_image, [filename])
+  @spec save_image(image()) :: image_or_error()
+  def save_image(image) do
+    with {:ok, _} <- Image.save(image), do: image
+  end
 
   @doc """
   Sets the image's current point to `point`.
@@ -898,12 +889,12 @@ defmodule Xairo do
   end
 
   @doc """
-  Sets the document unit type for a `Xairo.SvgImage`.
+  Sets the document unit type for a `Xairo.Image.Svg`.
 
-  See `t:Xairo.SvgImage.svg_unit/0` for a list of the possible valid values
+  See `t:Xairo.Image.Svg.svg_unit/0` for a list of the possible valid values
   for the `unit` argument.
   """
-  @spec set_document_unit(SvgImage.t(), SvgImage.svg_unit()) :: SvgImage.t()
+  @spec set_document_unit(Image.Svg.t(), Image.Svg.svg_unit()) :: Image.Svg.t()
   native_fn(:set_document_unit, [unit])
 
   @doc """

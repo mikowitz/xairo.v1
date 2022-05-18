@@ -25,8 +25,8 @@ defmodule Xairo.Path do
   Returns a tuple of `{path, image}`, ensuring that the returned image has its
   tolerance set back to its value before calling `flat/1`.
   """
-  @spec flat(Xairo.Image.t()) :: {__MODULE__.t(), Xairo.Image.t()}
-  def flat(%Xairo.Image{} = image, tolerance \\ nil) do
+  @spec flat(Xairo.Image.Png.t()) :: {__MODULE__.t(), Xairo.Image.Png.t()}
+  def flat(%Xairo.Image.Png{} = image, tolerance \\ nil) do
     original_tolerance = Xairo.get_tolerance(image)
 
     path =

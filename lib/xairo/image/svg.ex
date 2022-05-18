@@ -1,6 +1,6 @@
-defmodule Xairo.SvgImage do
+defmodule Xairo.Image.Svg do
   @moduledoc """
-  `Xairo.SvgImage` provides a wrapper around the in-memory C representation of a
+  `Xairo.Image.Svg` provides a wrapper around the in-memory C representation of a
   cairo image that will be rendered to an SVG document.
 
   In addition to a reference to the C resource, it stores information about the
@@ -9,7 +9,7 @@ defmodule Xairo.SvgImage do
   calculations of userspace while drawing, while ensuring that they are
   correctly scaled on the generated image.
 
-  There are two ways to scale an `SvgImage` up or down. By changing the scale value, or by changing the document unit, though depending on when they are called,
+  There are two ways to scale an `Svg` up or down. By changing the scale value, or by changing the document unit, though depending on when they are called,
   they differ in their final effect.
 
   Setting the scale when initializing the image will correctly scale the image's
@@ -28,20 +28,20 @@ defmodule Xairo.SvgImage do
 
   As an example, the following code
 
-      iex> image = SvgImage.new("test.svg", 100, 100)
+      iex> image = Svg.new("test.svg", 100, 100)
       iex> image |> Xairo.move_to({10, 10}) |> Xairo.line_to({90, 90})
 
   will produce a 100x100 point image with a line from (10, 10) to (90, 90),
   and this code
 
-      iex> image = SvgImage.new("test.svg", 100, 100, scale: 3, unit: :mm)
+      iex> image = Svg.new("test.svg", 100, 100, scale: 3, unit: :mm)
       iex> image |> Xairo.move_to({10, 10}) |> Xairo.line_to({90, 90})
 
   will produce a 300x300 millimeter image with a line from (30, 30) to (270, 270).
 
   ### Document units
 
-  The document unit for an `SvgImage` can be set in a call to `Xairo.new_svg_image/4`, or by calling `Xairo.set_document_unit/2` at any point during the image lifecycle. This is the unit that will determine the final width and height of the image, and the unit of the coordinate grid for positioning and rendering paths
+  The document unit for an `Image.Svg` can be set in a call to `Xairo.new_image/4`, or by calling `Xairo.set_document_unit/2` at any point during the image lifecycle. This is the unit that will determine the final width and height of the image, and the unit of the coordinate grid for positioning and rendering paths
 
   Unit types are represented by atoms, and can be any of the following:
 
@@ -88,7 +88,7 @@ defmodule Xairo.SvgImage do
         }
 
   @doc """
-  Creates a new `SvgImage`
+  Creates a new `Svg`
 
   Takes as required arguments a filename, width, and height. Optional keyword arguments can be giving for `scale` and `unit`.
 
@@ -96,14 +96,15 @@ defmodule Xairo.SvgImage do
 
   ## Example
 
-      iex> SvgImage.new("test.svg", 100, 100, scale: 2)
+      iex> Svg.new("test.svg", 100, 100, scale: 2)
 
   creates a new image "test.svg" that is 200x200 points in size.
 
-      iex> SvgImage.new("test.svg", 100, 100, unit: :in)
+      iex> Svg.new("test.svg", 100, 100, unit: :in)
 
   creates an image "test.svg" that is 100x100 inches in size.
   """
+  @behaviour Xairo.Image
   @spec new(String.t(), number(), number(), Keyword.t() | nil) :: __MODULE__.t()
   def new(filename, width, height, opts \\ []) do
     scale = Keyword.get(opts, :scale, 1.0)
@@ -132,7 +133,7 @@ defmodule Xairo.SvgImage do
     import Inspect.Algebra
 
     def inspect(
-          %Xairo.SvgImage{
+          %Xairo.Image.Svg{
             width: width,
             height: height,
             scale: scale,
@@ -143,10 +144,12 @@ defmodule Xairo.SvgImage do
           opts
         ) do
       concat([
-        "#SvgImage<",
+        "#Xairo.Image.Svg<",
         "#{width}x#{height}@#{scale} ",
         "(#{unit})",
+        " ",
         filename,
+        " ",
         to_doc(resource, opts),
         ">"
       ])

@@ -9,7 +9,7 @@ defmodule Xairo.VectorTest do
   describe "converting between user and image spaces" do
     setup do
       image =
-        Xairo.new_image(100, 100)
+        Xairo.new_image("test.png", 100, 100)
         |> Xairo.translate(40, 40)
         |> Xairo.rotate(:math.pi() / 6)
         |> Xairo.transform(Matrix.new(xx: 3, yy: 3, yt: -40))

@@ -3,26 +3,39 @@ defmodule Xairo.Helpers.ImageHelpers do
 
   import ExUnit.Assertions
 
-  def assert_image(%Xairo.Image{} = image, path) do
-    Xairo.save_image(image, path)
+  def assert_image(image, expected_path \\ nil)
 
-    actual = hash(path)
-    expected = hash("test/images/" <> path)
-
-    assert actual == expected
-
-    :ok = File.rm(path)
+  def assert_image(%Xairo.Image.Png{} = image, expected_path) do
+    do_assert_image(image, expected_path, fn actual, expected ->
+      assert hash(actual) == hash(expected)
+    end)
   end
 
-  def assert_image(%Xairo.SvgImage{} = image, path) do
-    Xairo.save_image(image, path)
+  def assert_image(%Xairo.Image.Svg{} = image, expected_path) do
+    do_assert_image(image, expected_path, fn actual, expected ->
+      assert read(actual) == read(expected)
+    end)
+  end
 
-    actual = read(path)
-    expected = read("test/images/" <> path)
+  def assert_image(%Xairo.Image.Ps{} = image, expected_path) do
+    do_assert_image(image, expected_path, fn actual, expected ->
+      assert read(actual) == read(expected)
+    end)
+  end
 
-    assert actual == expected
+  def assert_image(%Xairo.Image.Pdf{} = image, expected_path) do
+    do_assert_image(image, expected_path, fn actual, expected ->
+      {_, 0} = System.cmd("diff-pdf", [actual, expected])
+    end)
+  end
 
-    :ok == File.rm(path)
+  defp do_assert_image(%{filename: filename} = image, expected_path, func) do
+    expected_path = expected_path || filename
+    Xairo.save_image(image)
+
+    func.(filename, Path.join("test/images/", expected_path))
+
+    :ok = File.rm(filename)
   end
 
   defp hash(file) do
@@ -35,6 +48,11 @@ defmodule Xairo.Helpers.ImageHelpers do
 
   defp read(file) do
     {content, 0} = System.cmd("cat", [file])
-    String.replace(content, ~r/id=\".*\"/, "id=\"\"")
+
+    content
+    ## strip ID from SVG
+    |> String.replace(~r/id=\".*\"/, "id=\"\"")
+    ## strip timestame from PDF
+    |> String.replace(~r/%%CreationDate:[^\n]+/, "")
   end
 end

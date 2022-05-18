@@ -6,7 +6,7 @@ defmodule XairoTest do
 
   setup do
     image =
-      Xairo.new_image(100, 100, 2)
+      Xairo.new_image("test.png", 100, 100, scale: 2)
       |> Xairo.set_color(1, 1, 1)
       |> Xairo.paint()
 
@@ -15,49 +15,49 @@ defmodule XairoTest do
 
   test "error handling for bad filename" do
     assert {:error, "Error creating file at nope/nope/nope.png"} ==
-             Xairo.new_image(100, 100)
-             |> Xairo.save_image("nope/nope/nope.png")
+             Xairo.new_image("nope/nope/nope.png", 100, 100)
+             |> Xairo.save_image()
   end
 
   test "proper return for valid filename" do
-    %Xairo.Image{} =
-      Xairo.new_image(100, 100)
-      |> Xairo.save_image("yep.png")
+    %Xairo.Image.Png{} =
+      Xairo.new_image("yep.png", 100, 100)
+      |> Xairo.save_image()
 
     :ok = File.rm("yep.png")
   end
 
   test "can create and save an empty image" do
-    Xairo.new_image(100, 100)
-    |> assert_image("empty.png")
+    Xairo.new_image("empty.png", 100, 100)
+    |> assert_image()
   end
 
   test "creates a scaled image" do
-    Xairo.new_image(100, 100, 2)
+    Xairo.new_image("scaled.png", 100, 100, scale: 2)
     |> Xairo.move_to({10, 10})
     |> Xairo.line_to({90, 90})
     |> Xairo.stroke()
-    |> assert_image("scaled.png")
+    |> assert_image()
   end
 
   test "can draw on an image" do
-    Xairo.new_image(100, 100)
+    Xairo.new_image("diagonal.png", 100, 100)
     |> Xairo.move_to({10, 10})
     |> Xairo.line_to({90, 90})
     |> Xairo.stroke()
-    |> assert_image("diagonal.png")
+    |> assert_image()
   end
 
   test "can draw on an image using points" do
-    Xairo.new_image(100, 100)
+    Xairo.new_image("diagonal.png", 100, 100)
     |> Xairo.move_to(Point.new(10, 10))
     |> Xairo.line_to(Point.new(90, 90))
     |> Xairo.stroke()
-    |> assert_image("diagonal.png")
+    |> assert_image()
   end
 
   test "colors" do
-    Xairo.new_image(100, 100)
+    Xairo.new_image("colors.png", 100, 100)
     |> Xairo.set_color(0.5, 0, 1)
     |> Xairo.paint()
     |> Xairo.move_to({10, 10})
@@ -71,7 +71,7 @@ defmodule XairoTest do
     |> Xairo.close_path()
     |> Xairo.set_color(0, 1, 0, 0.4)
     |> Xairo.fill()
-    |> assert_image("colors.png")
+    |> assert_image()
   end
 
   test "line_caps", %{image: image} do
@@ -102,7 +102,7 @@ defmodule XairoTest do
 
   test "line_joins" do
     image =
-      Xairo.new_image(100, 100, 4.0)
+      Xairo.new_image("line_joins.png", 100, 100, scale: 4.0)
       |> Xairo.set_color(1, 1, 1)
       |> Xairo.paint()
       |> Xairo.set_color(0.5, 0, 1)
@@ -131,7 +131,7 @@ defmodule XairoTest do
         |> Xairo.stroke()
       end)
 
-    assert_image(image, "line_joins.png")
+    assert_image(image)
   end
 
   test "dashes", %{image: image} do

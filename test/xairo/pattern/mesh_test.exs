@@ -27,7 +27,7 @@ defmodule Xairo.Pattern.MeshTest do
       |> Mesh.set_corner_color(1, RGBA.new(0, 1, 0))
       |> Mesh.set_corner_color(2, RGBA.new(0, 0, 1))
 
-    Xairo.new_image(100, 100, 2)
+    Xairo.new_image("mesh.png", 100, 100, scale: 2)
     |> Xairo.set_source(mesh1)
     |> Xairo.paint()
     |> Xairo.set_source(mesh2)
@@ -52,7 +52,7 @@ defmodule Xairo.Pattern.MeshTest do
     end
 
     test "with no control points", %{mesh: mesh} do
-      Xairo.new_image(100, 100, 2)
+      Xairo.new_image("mesh_no_control_points.png", 100, 100, scale: 2)
       |> Xairo.set_source(mesh)
       |> Xairo.paint()
       |> assert_image("mesh_no_control_points.png")
@@ -64,7 +64,7 @@ defmodule Xairo.Pattern.MeshTest do
         |> Mesh.set_control_point(1, {0, 100})
         |> Mesh.set_control_point(2, {150, -50})
 
-      Xairo.new_image(100, 100, 2)
+      Xairo.new_image("mesh_with_control_points.png", 100, 100, scale: 2)
       |> Xairo.set_source(mesh)
       |> Xairo.paint()
       |> assert_image("mesh_with_control_points.png")
