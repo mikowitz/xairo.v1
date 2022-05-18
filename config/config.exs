@@ -4,5 +4,6 @@ config :mix_test_watch,
   extra_extensions: [".rs"],
   tasks: [
     "test",
+    "credo --strict --all",
     "docs"
   ]
