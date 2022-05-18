@@ -33,7 +33,7 @@ defmodule Xairo.Pattern.RadialGradientTest do
 
     moon_arc = Arc.new({30, 30}, 20, 0, :math.pi() * 2)
 
-    Xairo.new_image(100, 100, 2)
+    Xairo.new_image("radial_gradients.png", 100, 100, scale: 2)
     |> Xairo.set_source(background)
     |> Xairo.paint()
     |> Xairo.set_source(moon)

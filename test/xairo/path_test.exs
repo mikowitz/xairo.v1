@@ -4,7 +4,7 @@ defmodule Xairo.PathTest do
 
   test "copy_path" do
     image =
-      Xairo.new_image(200, 200)
+      Xairo.new_image("copy_path.png", 200, 200)
       |> Xairo.set_color(1, 1, 1)
       |> Xairo.paint()
       |> Xairo.set_color(0, 0, 0)
@@ -21,7 +21,7 @@ defmodule Xairo.PathTest do
     |> Xairo.set_color(0, 0.5, 1)
     |> Xairo.append_path(path)
     |> Xairo.stroke()
-    |> assert_image("copy_path.png")
+    |> assert_image()
   end
 
   test "copy_path_flat" do
@@ -57,7 +57,7 @@ defmodule Xairo.PathTest do
   end
 
   def image_for_flat_tests do
-    Xairo.new_image(200, 200)
+    Xairo.new_image("flat_test.png", 200, 200)
     |> Xairo.set_color(1, 1, 1)
     |> Xairo.paint()
     |> Xairo.set_color(0, 0, 0)

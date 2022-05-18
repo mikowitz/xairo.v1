@@ -28,7 +28,7 @@ defmodule Xairo.Pattern.LinearGradientTest do
         ]
       )
 
-    Xairo.new_image(100, 100, 2)
+    Xairo.new_image("linear_gradients.png", 100, 100, scale: 2)
     |> Xairo.set_line_width(10)
     |> Xairo.set_source(vertical_gradient)
     |> Xairo.paint()

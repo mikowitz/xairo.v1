@@ -14,8 +14,10 @@ defmodule Xairo.MixProject do
         main: Xairo,
         groups_for_modules: [
           "Image Types": [
-            Xairo.Image,
-            Xairo.SvgImage
+            Xairo.Image.Pdf,
+            Xairo.Image.Png,
+            Xairo.Image.Ps,
+            Xairo.Image.Svg
           ],
           Shapes: [
             Xairo.Arc,

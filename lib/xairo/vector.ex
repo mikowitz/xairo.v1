@@ -9,8 +9,6 @@ defmodule Xairo.Vector do
 
   """
 
-  alias Xairo.Image
-
   defstruct [:x, :y]
 
   @type t :: %__MODULE__{
@@ -78,8 +76,8 @@ defmodule Xairo.Vector do
   This operation uses the image's current transformation matrix to make the calculation,
   and the translation component of the image's CTM.
   """
-  @spec user_to_device(__MODULE__.t(), Image.t()) :: __MODULE__.t() | Xairo.error()
-  def user_to_device(%__MODULE__{} = vector, %Image{} = image) do
+  @spec user_to_device(__MODULE__.t(), Xairo.image()) :: __MODULE__.t() | Xairo.error()
+  def user_to_device(%__MODULE__{} = vector, %{resource: _} = image) do
     with {:ok, %__MODULE__{} = vector} <-
            Xairo.Native.user_to_device_distance(image.resource, vector) do
       vector
@@ -92,8 +90,8 @@ defmodule Xairo.Vector do
   This operation uses the image's current transformation matrix to make the calculation,
   and the translation component of the image's CTM.
   """
-  @spec device_to_user(__MODULE__.t(), Image.t()) :: __MODULE__.t() | Xairo.error()
-  def device_to_user(%__MODULE__{} = vector, %Image{} = image) do
+  @spec device_to_user(__MODULE__.t(), Xairo.image()) :: __MODULE__.t() | Xairo.error()
+  def device_to_user(%__MODULE__{} = vector, %{resource: _} = image) do
     with {:ok, %__MODULE__{} = vector} <-
            Xairo.Native.device_to_user_distance(image.resource, vector) do
       vector
