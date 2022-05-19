@@ -12,6 +12,11 @@ defmodule Xairo.Native do
 
   def save_image(_i, _f), do: error()
 
+  def set_radial_gradient_mask(_i, _g), do: error()
+  def set_linear_gradient_mask(_i, _g), do: error()
+  def set_mesh_mask(_i, _m), do: error()
+  def mask_surface(_i, _m, _p), do: error()
+
   def move_to(_i, _p), do: error()
   def line_to(_i, _p), do: error()
   def stroke(_i), do: error()

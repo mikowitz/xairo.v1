@@ -1,4 +1,4 @@
-use crate::error::Error;
+use crate::{error::Error, shapes::Point};
 use cairo::{Context, Format, ImageSurface, PdfSurface, PsSurface, SvgSurface};
 use rustler::ResourceArc;
 use std::fs::File;
@@ -170,6 +170,18 @@ pub fn set_document_unit(image: ImageArc, unit: SvgUnit) -> ImageResult {
     match image.set_document_unit(unit) {
         Ok(_) => Ok(image),
         Err(e) => Err(e),
+    }
+}
+
+#[rustler::nif]
+pub fn mask_surface(image: ImageArc, mask: ImageArc, point: Point) -> ImageResult {
+    if let XairoSurface::Image(mask_surface) = &mask.surface {
+        match image.context.mask_surface(&mask_surface, point.x, point.y) {
+            Ok(_) => Ok(image),
+            Err(_) => Err(Error::MaskError),
+        }
+    } else {
+        Err(Error::MaskError)
     }
 }
 
