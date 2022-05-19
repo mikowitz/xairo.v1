@@ -33,7 +33,8 @@ defmodule Xairo.MixProject do
             Xairo.Pattern,
             Xairo.Pattern.LinearGradient,
             Xairo.Pattern.RadialGradient,
-            Xairo.Pattern.Mesh
+            Xairo.Pattern.Mesh,
+            Xairo.Mask
           ],
           Text: [
             Xairo.Text,

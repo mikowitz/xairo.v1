@@ -1,7 +1,7 @@
-use rustler::{Term, Env};
+use rustler::{Env, Term};
 use thiserror::Error as ThisErrorError;
 
-#[derive(Debug,ThisErrorError)]
+#[derive(Debug, ThisErrorError)]
 pub enum Error {
     #[error("Error creating image context")]
     ContextCreate,
@@ -27,6 +27,8 @@ pub enum Error {
     UninvertibleMatrix,
     #[error("Could not copy path")]
     CopyPath,
+    #[error("Could not apply pattern as mask")]
+    MaskError,
 }
 
 impl rustler::Encoder for Error {

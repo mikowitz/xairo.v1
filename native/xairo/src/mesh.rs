@@ -1,40 +1,41 @@
-use crate::shapes::Point;
 use crate::color::Rgba;
+use crate::error::Error;
 use crate::shapes::Curve;
+use crate::shapes::Point;
 use crate::xairo_image::{ImageArc, ImageResult};
 use cairo::MeshCorner;
-use crate::error::Error;
 
-#[derive(Debug,NifUntaggedEnum)]
+#[derive(Debug, NifUntaggedEnum)]
 pub enum SidePath {
     Point(Point),
-    Curve(Curve)
+    Curve(Curve),
 }
 
-#[derive(Debug,NifStruct)]
+#[derive(Debug, NifStruct)]
 #[module = "Xairo.Pattern.Mesh"]
 pub struct Mesh {
     pub start: Point,
     side_paths: Vec<SidePath>,
     corner_colors: Vec<Option<Rgba>>,
-    control_points: Vec<Option<Point>>
+    control_points: Vec<Option<Point>>,
 }
 
 #[rustler::nif]
 fn set_mesh_source(image: ImageArc, mesh: Mesh) -> ImageResult {
-    let m = cairo::Mesh::new();
-    m.begin_patch();
-    m.move_to(mesh.start.x, mesh.start.y);
-
-    draw_paths(&m, &mesh.side_paths);
-    set_colors(&m, &mesh.corner_colors);
-    set_control_points(&m, &mesh.control_points);
-
-    m.end_patch();
+    let m = into_cairo_mesh(mesh);
 
     match image.context.set_source(&m) {
         Ok(_) => Ok(image),
-        Err(_) => Err(Error::SetSource("mesh"))
+        Err(_) => Err(Error::SetSource("mesh")),
+    }
+}
+
+#[rustler::nif]
+fn set_mesh_mask(image: ImageArc, mesh: Mesh) -> ImageResult {
+    let mask_pattern = into_cairo_mesh(mesh);
+    match image.context.mask(&mask_pattern) {
+        Ok(_) => Ok(image),
+        Err(_) => Err(Error::MaskError),
     }
 }
 
@@ -47,7 +48,7 @@ fn draw_paths<'a>(mesh: &'a cairo::Mesh, side_paths: &[SidePath]) -> &'a cairo::
                 mesh.curve_to(x1, y1, x2, y2, x3, y3);
             }
         }
-    };
+    }
     mesh
 }
 
@@ -59,25 +60,41 @@ fn set_colors<'a>(mesh: &'a cairo::Mesh, corner_colors: &[Option<Rgba>]) -> &'a 
                 if let Some(corner) = mesh_corner(i) {
                     mesh.set_corner_color_rgba(corner, r, g, b, a);
                 }
-            },
-            None => ()
+            }
+            None => (),
         }
-    };
+    }
     mesh
 }
 
-fn set_control_points<'a>(mesh: &'a cairo::Mesh, control_points: &[Option<Point>]) -> &'a cairo::Mesh {
+fn set_control_points<'a>(
+    mesh: &'a cairo::Mesh,
+    control_points: &[Option<Point>],
+) -> &'a cairo::Mesh {
     for (i, point) in control_points.iter().enumerate().take(4) {
         match point {
             Some(point) => {
                 if let Some(corner) = mesh_corner(i) {
                     mesh.set_control_point(corner, point.x, point.y);
                 }
-            },
-            None => ()
+            }
+            None => (),
         }
-    };
+    }
     mesh
+}
+
+fn into_cairo_mesh(mesh: Mesh) -> cairo::Mesh {
+    let m = cairo::Mesh::new();
+    m.begin_patch();
+    m.move_to(mesh.start.x, mesh.start.y);
+
+    draw_paths(&m, &mesh.side_paths);
+    set_colors(&m, &mesh.corner_colors);
+    set_control_points(&m, &mesh.control_points);
+
+    m.end_patch();
+    m
 }
 
 fn mesh_corner(index: usize) -> Option<MeshCorner> {
@@ -86,6 +103,6 @@ fn mesh_corner(index: usize) -> Option<MeshCorner> {
         1 => Some(MeshCorner::MeshCorner1),
         2 => Some(MeshCorner::MeshCorner2),
         3 => Some(MeshCorner::MeshCorner3),
-        _ => None
+        _ => None,
     }
 }

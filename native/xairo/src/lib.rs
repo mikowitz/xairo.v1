@@ -12,6 +12,7 @@ mod matrix;
 mod mesh;
 mod path;
 use path::XairoPath;
+
 mod radial_gradient;
 mod shapes;
 mod text;
@@ -28,6 +29,7 @@ rustler::init!(
         xairo_image::new_ps_image,
         xairo_image::save_image,
         xairo_image::set_document_unit,
+        xairo_image::mask_surface,
         drawing::move_to,
         drawing::rel_move_to,
         drawing::line_to,
@@ -47,8 +49,11 @@ rustler::init!(
         line_cap::set_line_cap,
         line_join::set_line_join,
         linear_gradient::set_linear_gradient_source,
+        linear_gradient::set_linear_gradient_mask,
         radial_gradient::set_radial_gradient_source,
+        radial_gradient::set_radial_gradient_mask,
         mesh::set_mesh_source,
+        mesh::set_mesh_mask,
         text::set_font_size,
         text::show_text,
         text::text_extents,

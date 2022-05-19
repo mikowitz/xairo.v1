@@ -949,4 +949,37 @@ defmodule Xairo do
   """
   @spec set_tolerance(image(), float) :: image_or_error()
   native_fn(:set_tolerance, [{tolerance, Float}])
+
+  @doc """
+    Sets the given pattern as a mask layer on the image.
+
+    When a pattern is set as a mask, only its alpha channel is
+    applied to the final image.
+  """
+  @spec mask(image(), Xairo.Pattern.pattern()) :: image_or_error()
+  def mask(%{resource: _} = image, %RadialGradient{} = gradient) do
+    with {:ok, _} <- Xairo.Native.set_radial_gradient_mask(image.resource, gradient), do: image
+  end
+
+  def mask(%{resource: _} = image, %LinearGradient{} = gradient) do
+    with {:ok, _} <- Xairo.Native.set_linear_gradient_mask(image.resource, gradient), do: image
+  end
+
+  def mask(%{resource: _} = image, %Mesh{} = mesh) do
+    with {:ok, _} <- Xairo.Native.set_mesh_mask(image.resource, mesh), do: image
+  end
+
+  @doc """
+    Adds the given `Mask` as a mask surface on the image.
+
+    See `Xairo.Mask` for a description of the expected struct format.
+  """
+  @spec mask_surface(image(), Xairo.Mask.t(), Xairo.point()) :: image_or_error()
+  def mask_surface(%{resource: _} = image, %{resource: _} = mask, {x, y}) do
+    mask_surface(image, mask, Point.new(x, y))
+  end
+
+  def mask_surface(%{resource: _} = image, %{resource: _} = mask, %Point{} = point) do
+    with {:ok, _} <- Native.mask_surface(image.resource, mask.resource, point), do: image
+  end
 end
