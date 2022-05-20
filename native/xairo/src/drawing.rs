@@ -1,5 +1,5 @@
-use crate::xairo_image::ImageArc;
 use crate::shapes::{Arc, Curve, Point, Rectangle, Vector};
+use crate::xairo_image::ImageArc;
 
 #[rustler::nif]
 fn move_to(image: ImageArc, point: Point) -> ImageArc {
@@ -33,19 +33,33 @@ fn close_path(image: ImageArc) -> ImageArc {
 
 #[rustler::nif]
 fn arc(image: ImageArc, shape: Arc) -> ImageArc {
-    image.context.arc(shape.center.x, shape.center.y, shape.radius, shape.start_angle, shape.stop_angle);
+    image.context.arc(
+        shape.center.x,
+        shape.center.y,
+        shape.radius,
+        shape.start_angle,
+        shape.stop_angle,
+    );
     image
 }
 
 #[rustler::nif]
 fn arc_negative(image: ImageArc, shape: Arc) -> ImageArc {
-    image.context.arc_negative(shape.center.x, shape.center.y, shape.radius, shape.start_angle, shape.stop_angle);
+    image.context.arc_negative(
+        shape.center.x,
+        shape.center.y,
+        shape.radius,
+        shape.start_angle,
+        shape.stop_angle,
+    );
     image
 }
 
 #[rustler::nif]
 fn rectangle(image: ImageArc, rect: Rectangle) -> ImageArc {
-    image.context.rectangle(rect.corner.x, rect.corner.y, rect.width, rect.height);
+    image
+        .context
+        .rectangle(rect.corner.x, rect.corner.y, rect.width, rect.height);
     image
 }
 
@@ -61,4 +75,27 @@ fn rel_curve_to(image: ImageArc, curve: Curve) -> ImageArc {
     let ((x1, y1), (x2, y2), (x3, y3)) = curve.to_tuple();
     image.context.rel_curve_to(x1, y1, x2, y2, x3, y3);
     image
+}
+
+#[rustler::nif]
+fn new_path(image: ImageArc) -> ImageArc {
+    image.context.new_path();
+    image
+}
+
+#[rustler::nif]
+fn new_sub_path(image: ImageArc) -> ImageArc {
+    image.context.new_sub_path();
+    image
+}
+
+#[rustler::nif]
+fn current_point(image: ImageArc) -> Result<(f64, f64), ()> {
+    match image.context.has_current_point() {
+        Ok(true) => match image.context.current_point() {
+            Ok((x, y)) => Ok((x, y)),
+            Err(_) => Err(()),
+        },
+        _ => Err(()),
+    }
 }

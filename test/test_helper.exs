@@ -5,6 +5,6 @@
 # a good command line tool for comparing PDFs
 case :os.type() do
   {_, :darwin} -> ExUnit.start(exclude: [macos: false])
-  {:unix, _} -> ExUnit.start(exclude: [pdf: true])
+  {:unix, _} -> ExUnit.start(exclude: [pdf: true, macos: true])
   _ -> ExUnit.start()
 end

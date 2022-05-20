@@ -25,6 +25,11 @@ defmodule Xairo.Native do
   def fill(_i), do: error()
   def close_path(_i), do: error()
 
+  def new_path(_i), do: error()
+  def new_sub_path(_i), do: error()
+
+  def current_point(_i), do: error()
+
   def set_line_width(_i, _w), do: error()
   def set_line_cap(_i, _lc), do: error()
   def set_line_join(_i, _lj), do: error()
@@ -47,6 +52,7 @@ defmodule Xairo.Native do
 
   def set_font_size(_i, _s), do: error()
   def show_text(_i, _str), do: error()
+  def text_path(_i, _str), do: error()
 
   def text_extents(_i, _str), do: error()
 
