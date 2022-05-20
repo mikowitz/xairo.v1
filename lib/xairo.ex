@@ -982,4 +982,54 @@ defmodule Xairo do
   def mask_surface(%{resource: _} = image, %{resource: _} = mask, %Point{} = point) do
     with {:ok, _} <- Native.mask_surface(image.resource, mask.resource, point), do: image
   end
+
+  @doc """
+    Begins a new path on the image, clearing the existing path.
+
+    Any current path components that have not been rendered are removed
+    from the path.
+  """
+  @spec new_path(image()) :: image()
+  def new_path(%{resource: _} = image) do
+    Native.new_path(image.resource)
+    image
+  end
+
+  @doc """
+    Begins a new subpath, preserving the existing path.
+
+    After this function is called, there is no current point set. Often
+    this call is not needed, as most new path segments start with a call
+    to `move_to/2`. One particularly useful instance for `new_sub_path/1` is
+    when the new path begins with an arc.
+
+    In this case beginning a new subpath removes the need to calculate and move to
+    the beginning of the arc in order to avoid a line connecting it to the previous
+    current point.
+  """
+  @spec new_sub_path(image()) :: image()
+  def new_sub_path(%{resource: _} = image) do
+    Native.new_sub_path(image.resource)
+    image
+  end
+
+  @doc """
+    Returns the image's current point, if it exists, or `nil` otherwise.
+  """
+  @spec current_point(image()) :: or_nil(Point.t())
+  def current_point(%{resource: _} = image) do
+    case Native.current_point(image.resource) do
+      {:ok, {x, y}} -> Point.new(x, y)
+      _ -> nil
+    end
+  end
+
+  @doc """
+    Adds closed paths to the current path representing the given text.
+
+    Calling `fill/1` subequently to this function is equivalent to
+    calling `show_text/2` with the same text.
+  """
+  @spec text_path(image(), String.t()) :: image()
+  native_fn(:text_path, [text])
 end

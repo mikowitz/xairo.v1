@@ -1,37 +1,37 @@
-use crate::xairo_image::ImageArc;
 use crate::error::Error;
+use crate::xairo_image::ImageArc;
 
-#[derive(Copy,Clone,Debug,NifUnitEnum)]
+#[derive(Copy, Clone, Debug, NifUnitEnum)]
 pub enum FontFamily {
     Serif,
     Sans,
     Cursive,
     Fantasy,
-    Monospace
+    Monospace,
 }
 
-#[derive(Copy,Clone,Debug,NifUnitEnum)]
+#[derive(Copy, Clone, Debug, NifUnitEnum)]
 pub enum FontSlant {
     Normal,
     Italic,
-    Oblique
+    Oblique,
 }
 
-#[derive(Copy,Clone,Debug,NifUnitEnum)]
+#[derive(Copy, Clone, Debug, NifUnitEnum)]
 pub enum FontWeight {
     Normal,
-    Bold
+    Bold,
 }
 
-#[derive(Copy,Clone,Debug,NifStruct)]
-#[module="Xairo.Text.Font"]
+#[derive(Copy, Clone, Debug, NifStruct)]
+#[module = "Xairo.Text.Font"]
 pub struct Font {
     pub family: FontFamily,
     pub slant: FontSlant,
     pub weight: FontWeight,
 }
 
-#[derive(Debug,NifStruct)]
+#[derive(Debug, NifStruct)]
 #[module = "Xairo.Text.Extents"]
 pub struct Extents {
     pub text: String,
@@ -41,9 +41,8 @@ pub struct Extents {
     pub width: f64,
     pub height: f64,
     pub x_advance: f64,
-    pub y_advance: f64
+    pub y_advance: f64,
 }
-
 
 #[rustler::nif]
 fn set_font_size(image: ImageArc, font_size: f64) -> ImageArc {
@@ -54,6 +53,12 @@ fn set_font_size(image: ImageArc, font_size: f64) -> ImageArc {
 #[rustler::nif]
 fn show_text(image: ImageArc, text: &str) -> ImageArc {
     image.context.show_text(text).unwrap();
+    image
+}
+
+#[rustler::nif]
+fn text_path(image: ImageArc, text: &str) -> ImageArc {
+    image.context.text_path(text);
     image
 }
 
@@ -93,14 +98,14 @@ fn match_font_slant(slant: FontSlant) -> cairo::FontSlant {
     match slant {
         FontSlant::Normal => cairo::FontSlant::Normal,
         FontSlant::Italic => cairo::FontSlant::Italic,
-        FontSlant::Oblique => cairo::FontSlant::Oblique
+        FontSlant::Oblique => cairo::FontSlant::Oblique,
     }
 }
 
 fn match_font_weight(weight: FontWeight) -> cairo::FontWeight {
     match weight {
         FontWeight::Normal => cairo::FontWeight::Normal,
-        FontWeight::Bold => cairo::FontWeight::Bold
+        FontWeight::Bold => cairo::FontWeight::Bold,
     }
 }
 
@@ -110,6 +115,6 @@ fn match_font_family(family: FontFamily) -> &'static str {
         FontFamily::Sans => "sans",
         FontFamily::Cursive => "cursive",
         FontFamily::Fantasy => "fantasy",
-        FontFamily::Monospace => "monospace"
+        FontFamily::Monospace => "monospace",
     }
 }

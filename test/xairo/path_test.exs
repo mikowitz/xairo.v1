@@ -56,7 +56,54 @@ defmodule Xairo.PathTest do
     |> assert_image("copy_path_flat.png")
   end
 
-  def image_for_flat_tests do
+  test "new_path ignores anything that was not rendered before" do
+    Xairo.new_image("new_path.png", 100, 100)
+    |> Xairo.set_color(1, 1, 1)
+    |> Xairo.move_to({10, 10})
+    |> Xairo.line_to({90, 90})
+    |> Xairo.new_path()
+    |> Xairo.arc({50, 50}, 20, 0, 3.1)
+    |> Xairo.stroke()
+    |> assert_image()
+  end
+
+  test "new_sub_path keeps existing path but breaks connector for an arc" do
+    Xairo.new_image("new_sub_path.png", 100, 100)
+    |> Xairo.set_color(1, 1, 1)
+    |> Xairo.move_to({10, 10})
+    |> Xairo.line_to({90, 90})
+    |> Xairo.new_sub_path()
+    |> Xairo.arc({50, 50}, 20, 0, 3.1)
+    |> Xairo.stroke()
+    |> assert_image()
+  end
+
+  test "current_point returns the path's current point, or nil if there is none" do
+    image = Xairo.new_image("current_point.png", 100, 100)
+
+    refute Xairo.current_point(image)
+
+    image =
+      image
+      |> Xairo.move_to({25, 75})
+      |> Xairo.line_to({50, 50})
+
+    assert Xairo.current_point(image) == Xairo.Point.new(50, 50)
+  end
+
+  @tag macos: true
+  test "text_path adds closed paths for the outline of the provided string" do
+    Xairo.new_image("text_path.png", 100, 100)
+    |> Xairo.set_color(1, 1, 1)
+    |> Xairo.set_font_size(30)
+    |> Xairo.set_line_width(0.5)
+    |> Xairo.move_to({20, 50})
+    |> Xairo.text_path("Hello")
+    |> Xairo.stroke()
+    |> assert_image()
+  end
+
+  defp image_for_flat_tests do
     Xairo.new_image("flat_test.png", 200, 200)
     |> Xairo.set_color(1, 1, 1)
     |> Xairo.paint()
@@ -68,3 +115,17 @@ defmodule Xairo.PathTest do
     |> Xairo.close_path()
   end
 end
+
+# let surface = ImageSurface::create(Format::ARgb32, 100, 100).expect("ok");
+# let context = Context::new(&surface).expect("ok");
+#
+# context.set_source_rgb(1.0, 1.0, 1.0);
+# context.set_font_size(30.);
+# context.set_line_width(0.5);
+#
+# context.move_to(20., 50.);
+# context.text_path("Hello");
+# context.stroke().unwrap();
+#
+# let mut file = File::create("text_path.png").expect("nope");
+# surface.write_to_png(&mut file).expect("uh oh");
