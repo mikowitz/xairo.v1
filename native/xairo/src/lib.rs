@@ -5,6 +5,7 @@ use rustler::{Env, Term};
 mod color;
 mod drawing;
 mod error;
+mod extents;
 mod line_cap;
 mod line_join;
 mod linear_gradient;
@@ -30,6 +31,7 @@ rustler::init!(
         xairo_image::save_image,
         xairo_image::set_document_unit,
         xairo_image::mask_surface,
+        extents::extents,
         drawing::move_to,
         drawing::rel_move_to,
         drawing::line_to,

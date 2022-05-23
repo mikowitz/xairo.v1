@@ -55,6 +55,7 @@ defmodule Xairo.Native do
   def text_path(_i, _str), do: error()
 
   def text_extents(_i, _str), do: error()
+  def extents(_i), do: error()
 
   def set_font_face(_i, _f), do: error()
   def set_font_matrix(_i, _m), do: error()
