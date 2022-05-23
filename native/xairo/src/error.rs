@@ -29,6 +29,8 @@ pub enum Error {
     CopyPath,
     #[error("Could not apply pattern as mask")]
     MaskError,
+    #[error("No control point set for corner {0} of patch {1}")]
+    ControlPointError(usize, usize),
 }
 
 impl rustler::Encoder for Error {
