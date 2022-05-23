@@ -44,10 +44,12 @@ defmodule Xairo.Pattern.Mesh do
   Create a new Mesh struct and sets the start point (C0 in the diagram above)
 
   ```
-  mesh = Mesh.new(Point.new(0,0))
+  mesh = Mesh.new()
+  |> Mesh.begin_patch()
+  |> Mesh.move_to(Point.new(0,0))
   ```
 
-  draws the 4 sides of the mesh
+  draw the 4 sides of the mesh
 
   ```
   mesh
@@ -61,186 +63,108 @@ defmodule Xairo.Pattern.Mesh do
 
   ```
   mesh
-  |> set_corner_color(0, RGBA.new(1, 0, 0)) # sets the color at C0 to red
-  |> set_corner_color(1, RGBA.new(0, 1, 0)) # sets the color at C1 to green
-  |> set_corner_color(2, RGBA.new(1, 0, 1)) # sets the color at C2 to blue
-  |> set_corner_color(3, RGBA.new(0, 1, 1)) # sets the color at C3 to cyan
+  |> Mesh.set_corner_color(0, RGBA.new(1, 0, 0)) # sets the color at C0 to red
+  |> Mesh.set_corner_color(1, RGBA.new(0, 1, 0)) # sets the color at C1 to green
+  |> Mesh.set_corner_color(2, RGBA.new(1, 0, 1)) # sets the color at C2 to blue
+  |> Mesh.set_corner_color(3, RGBA.new(0, 1, 1)) # sets the color at C3 to cyan
   ```
 
   set control points for corners C0 and C2
 
   ```
   mesh
-  |> set_control_point(0, Point.new(20, 20))
-  |> set_control_point(2, Point.new(50, 50))
+  |> Mesh.set_control_point(0, Point.new(20, 20))
+  |> Mesh.set_control_point(2, Point.new(50, 50))
   ```
 
-  set the mesh as the color source for an image
+  finalize the current patch for the mesh
+
+  ```
+  Mesh.end_patch(mesh)
+  ```
+
+  and set the mesh as the color source for an image
 
   ```
   Xairo.set_source(image, mesh)
   ```
   """
-  alias Xairo.{Curve, Point, RGBA}
+  alias Xairo.{Point, RGBA}
 
-  defstruct [
-    :start,
-    :side_paths,
-    :corner_colors,
-    :control_points
-  ]
+  defstruct [:pattern]
 
-  @type corner_index :: 0 | 1 | 2 | 3
-  @type path_definition :: Point.t() | Curve.t()
   @type t :: %__MODULE__{
-          start: Point.t(),
-          side_paths: [path_definition()],
-          corner_colors: [Xairo.or_nil(RGBA)],
-          control_points: [Xairo.or_nil(Point)]
+          pattern: reference()
         }
 
-  @doc """
-  Initializes a new mesh pattern with a start point.
-
-  Returns a `t:Xairo.Mesh.t/0` struct with its C0 coordinate set in userspace.
-
-  ## Example
-
-      iex> Mesh.new({0,0})
-      #Mesh<(0.0, 0.0), 0, 0>
-
-  """
-  @spec new(Xairo.point()) :: __MODULE__.t()
-  def new(%Point{} = start) do
+  @spec new() :: __MODULE__.t()
+  def new do
     %__MODULE__{
-      start: start,
-      side_paths: [],
-      corner_colors: [nil, nil, nil, nil],
-      control_points: [nil, nil, nil, nil]
+      pattern: Xairo.Native.mesh_new()
     }
   end
 
-  def new({x, y}) do
-    with start <- Point.new(x, y), do: new(start)
+  @spec begin_patch(__MODULE__.t()) :: __MODULE__.t()
+  def begin_patch(%__MODULE__{} = mesh) do
+    Xairo.Native.mesh_begin_patch(mesh.pattern)
+    mesh
   end
 
-  @doc """
-  Adds a new side of the mesh as a straight line.
+  @spec end_patch(__MODULE__.t()) :: __MODULE__.t()
+  def end_patch(%__MODULE__{} = mesh) do
+    Xairo.Native.mesh_end_patch(mesh.pattern)
+    mesh
+  end
 
-  The point passed as an argument is the next corner of the mesh.
+  @spec move_to(__MODULE__.t(), Xairo.point()) :: __MODULE__.t()
+  def move_to(%__MODULE__{} = mesh, point) do
+    Xairo.Native.mesh_move_to(mesh.pattern, Point.from(point))
+    mesh
+  end
 
-  ## Example
-
-      iex> mesh = Mesh.new({0, 0})
-      #Mesh<(0.0, 0.0), 0, 0>
-      iex> Mesh.line_to(mesh, {100, 0})
-      #Mesh<(0.0, 0.0), 1, 0>
-
-  """
   @spec line_to(__MODULE__.t(), Xairo.point()) :: __MODULE__.t()
   def line_to(%__MODULE__{} = mesh, point) do
-    %__MODULE__{
-      mesh
-      | side_paths: mesh.side_paths ++ [Point.from(point)]
-    }
+    Xairo.Native.mesh_line_to(mesh.pattern, Point.from(point))
+    mesh
   end
 
-  @doc """
-  Adds a new side of the mesh as a Bézier curve.
+  @spec curve_to(__MODULE__.t(), Xairo.point(), Xairo.point(), Xairo.point()) :: __MODULE__.t()
+  def curve_to(%__MODULE__{} = mesh, point1, point2, point3) do
+    Xairo.Native.mesh_curve_to(
+      mesh.pattern,
+      Point.from(point1),
+      Point.from(point2),
+      Point.from(point3)
+    )
 
-  The points passed in as arguments are the
-
-  - first control point
-  - second control point
-  - curve end
-
-  of the curve, respectively
-
-  ## Example
-
-      iex> mesh = Mesh.new({0, 0})
-      #Mesh<(0.0, 0.0), 0, 0>
-      iex> Mesh.curve_to(mesh, {20, 10}, {70, -10}, {100, 0})
-      #Mesh<(0.0, 0.0), 1, 0>
-
-  """
-  @spec curve_to(__MODULE__.t(), Curve.t()) :: __MODULE__.t()
-  def curve_to(%__MODULE__{} = mesh, %Curve{} = curve) do
-    %__MODULE__{
-      mesh
-      | side_paths: mesh.side_paths ++ [curve]
-    }
+    mesh
   end
 
-  @doc """
-  Calls `curve_to/2` with `mesh` and a `Xairo.Curve` constructed from the
-  remaining arguments.
-  """
-  @spec curve_to(__MODULE__.t(), Xairo.coordinate(), Xairo.coordinate(), Xairo.coordinate()) ::
-          __MODULE__.t()
-  def curve_to(%__MODULE__{} = mesh, p1, p2, p3) do
-    with curve <- Curve.new(p1, p2, p3), do: curve_to(mesh, curve)
+  @spec set_control_point(__MODULE__.t(), integer(), Xairo.point()) :: __MODULE__.t()
+  def set_control_point(%__MODULE__{} = mesh, corner, point) do
+    Xairo.Native.mesh_set_control_point(
+      mesh.pattern,
+      corner,
+      Point.from(point)
+    )
+
+    mesh
   end
 
-  @doc """
-  Sets the corner color for the given corner.
-
-  Takes as arguments, in addition to the `t:Xairo.Pattern.Mesh.t/0` struct, the index of the corner 0..3, and the color to be assigned.
-
-  ## Example
-
-      iex> mesh = Mesh.new({0, 0})
-      #Mesh<(0.0, 0.0), 0, 0>
-      iex> Mesh.set_corner_color(mesh, 0, RGBA.new(1, 0, 0))
-      #Mesh<(0.0, 0.0), 0, 1>
-
-  """
-  @spec set_corner_color(__MODULE__.t(), corner_index, RGBA.t()) :: __MODULE__.t()
-  def set_corner_color(%__MODULE__{} = mesh, corner_index, %RGBA{} = color)
-      when is_number(corner_index) do
-    corner_colors = List.insert_at(mesh.corner_colors, corner_index, color)
-    %__MODULE__{mesh | corner_colors: corner_colors}
+  @spec control_point(__MODULE__.t(), integer(), integer()) :: Point.t() | Xairo.error()
+  def control_point(%__MODULE__{} = mesh, patch_num, corner) do
+    with {:ok, point} <- Xairo.Native.mesh_control_point(mesh.pattern, patch_num, corner),
+         do: point
   end
 
-  @doc """
-  Adds a control point for the given corner.
+  @spec set_corner_color(__MODULE__.t(), integer(), RGBA.t()) :: __MODULE__.t()
+  def set_corner_color(%__MODULE__{} = mesh, corner, color) do
+    Xairo.Native.mesh_set_corner_color(
+      mesh.pattern,
+      corner,
+      color
+    )
 
-  Takes as arguments, in addition to the `t:Xairo.Pattern.Mesh.t/0` struct, the
-  index of the corner 0..3, and the coordinates (in userspace) of the control
-  point.
-
-  These control points further affect the blending of the colors in the mesh.
-
-  ## Example
-
-      iex> Mesh.new({0, 0})
-      ...> |> Mesh.set_corner_color(0, RGBA.new(1, 0, 0))
-      ...> |> Mesh.set_control_point(0, {50, 50})
-      #Mesh<(0.0, 0.0), 0, 1>
-  """
-  @spec set_control_point(__MODULE__.t(), corner_index(), Xairo.point()) :: __MODULE__.t()
-  def set_control_point(%__MODULE__{} = mesh, corner_index, point) when is_number(corner_index) do
-    control_points = List.insert_at(mesh.control_points, corner_index, Point.from(point))
-    %__MODULE__{mesh | control_points: control_points}
-  end
-
-  defimpl Inspect do
-    def inspect(%Xairo.Pattern.Mesh{} = mesh, _opts) do
-      [
-        "#Mesh<",
-        [
-          inspect_point(mesh.start),
-          length(mesh.side_paths),
-          length(Enum.reject(mesh.corner_colors, &is_nil/1))
-        ]
-        |> Enum.join(", "),
-        ">"
-      ]
-      |> Enum.join("")
-    end
-
-    defp inspect_point(%Point{x: x, y: y}) do
-      "(#{x}, #{y})"
-    end
+    mesh
   end
 end

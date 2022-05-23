@@ -11,6 +11,7 @@ mod line_join;
 mod linear_gradient;
 mod matrix;
 mod mesh;
+use mesh::XairoMesh;
 mod path;
 use path::XairoPath;
 
@@ -59,6 +60,15 @@ rustler::init!(
         radial_gradient::set_radial_gradient_mask,
         mesh::set_mesh_source,
         mesh::set_mesh_mask,
+        mesh::mesh_new,
+        mesh::mesh_begin_patch,
+        mesh::mesh_end_patch,
+        mesh::mesh_move_to,
+        mesh::mesh_line_to,
+        mesh::mesh_curve_to,
+        mesh::mesh_set_control_point,
+        mesh::mesh_set_corner_color,
+        mesh::mesh_control_point,
         text::set_font_size,
         text::show_text,
         text::text_extents,
@@ -95,5 +105,6 @@ rustler::init!(
 fn on_load(env: Env, _info: Term) -> bool {
     rustler::resource!(XairoImage, env);
     rustler::resource!(XairoPath, env);
+    rustler::resource!(XairoMesh, env);
     true
 }

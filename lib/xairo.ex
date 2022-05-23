@@ -735,7 +735,7 @@ defmodule Xairo do
   end
 
   def set_source(%{resource: _} = image, %Mesh{} = mesh) do
-    Native.set_mesh_source(image.resource, mesh)
+    Native.set_mesh_source(image.resource, mesh.pattern)
     image
   end
 
@@ -966,7 +966,7 @@ defmodule Xairo do
   end
 
   def mask(%{resource: _} = image, %Mesh{} = mesh) do
-    with {:ok, _} <- Xairo.Native.set_mesh_mask(image.resource, mesh), do: image
+    with {:ok, _} <- Xairo.Native.set_mesh_mask(image.resource, mesh.pattern), do: image
   end
 
   @doc """

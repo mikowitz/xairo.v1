@@ -88,5 +88,15 @@ defmodule Xairo.Native do
   def get_tolerance(_i), do: error()
   def set_tolerance(_i, _t), do: error()
 
+  def mesh_new, do: error()
+  def mesh_begin_patch(_m), do: error()
+  def mesh_end_patch(_m), do: error()
+  def mesh_move_to(_m, _p), do: error()
+  def mesh_line_to(_m, _p), do: error()
+  def mesh_curve_to(_m, _p1, _p2, _p3), do: error()
+  def mesh_set_control_point(_m, _c, _p), do: error()
+  def mesh_control_point(_m, _p, _c), do: error()
+  def mesh_set_corner_color(_m, _c, _rgb), do: error()
+
   defp error, do: :erlang.nif_error(:nif_not_loaded)
 end

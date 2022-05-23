@@ -43,7 +43,9 @@ defmodule Xairo.MaskTest do
 
   test "masking with a mesh", %{image: image} do
     mask =
-      Mesh.new({0, 0})
+      Mesh.new()
+      |> Mesh.begin_patch()
+      |> Mesh.move_to({0, 0})
       |> Mesh.curve_to({30, -30}, {60, 30}, {100, 0})
       |> Mesh.curve_to({60, 30}, {130, 60}, {100, 100})
       |> Mesh.curve_to({60, 70}, {130, 130}, {0, 100})
@@ -52,6 +54,7 @@ defmodule Xairo.MaskTest do
       |> Mesh.set_corner_color(1, RGBA.new(0, 1, 0, 0.1))
       |> Mesh.set_corner_color(2, RGBA.new(0, 0, 1, 0.8))
       |> Mesh.set_corner_color(3, RGBA.new(1, 1, 0, 0.2))
+      |> Mesh.end_patch()
 
     image
     |> Xairo.mask(mask)
