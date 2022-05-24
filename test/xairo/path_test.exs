@@ -91,7 +91,7 @@ defmodule Xairo.PathTest do
     assert Xairo.current_point(image) == Xairo.Point.new(50, 50)
   end
 
-  @tag macos: true
+  @tag macos: false
   test "text_path adds closed paths for the outline of the provided string" do
     Xairo.new_image("text_path.png", 100, 100)
     |> Xairo.set_color(1, 1, 1)
@@ -115,17 +115,3 @@ defmodule Xairo.PathTest do
     |> Xairo.close_path()
   end
 end
-
-# let surface = ImageSurface::create(Format::ARgb32, 100, 100).expect("ok");
-# let context = Context::new(&surface).expect("ok");
-#
-# context.set_source_rgb(1.0, 1.0, 1.0);
-# context.set_font_size(30.);
-# context.set_line_width(0.5);
-#
-# context.move_to(20., 50.);
-# context.text_path("Hello");
-# context.stroke().unwrap();
-#
-# let mut file = File::create("text_path.png").expect("nope");
-# surface.write_to_png(&mut file).expect("uh oh");
