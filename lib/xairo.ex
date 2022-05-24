@@ -730,7 +730,7 @@ defmodule Xairo do
   end
 
   def set_source(%{resource: _} = image, %RadialGradient{} = gradient) do
-    Native.set_radial_gradient_source(image.resource, gradient)
+    Native.set_radial_gradient_source(image.resource, gradient.pattern)
     image
   end
 
@@ -958,7 +958,8 @@ defmodule Xairo do
   """
   @spec mask(image(), Xairo.Pattern.pattern()) :: image_or_error()
   def mask(%{resource: _} = image, %RadialGradient{} = gradient) do
-    with {:ok, _} <- Xairo.Native.set_radial_gradient_mask(image.resource, gradient), do: image
+    with {:ok, _} <- Xairo.Native.set_radial_gradient_mask(image.resource, gradient.pattern),
+         do: image
   end
 
   def mask(%{resource: _} = image, %LinearGradient{} = gradient) do

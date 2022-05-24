@@ -28,8 +28,8 @@ defmodule Xairo.Pattern.LinearGradient do
 
   ```
   gradient = LinearGradient.add_color_stop(
-    RGBA.new(255, 0, 0), # color
-    0                    # position along the gradient's line (will be stored as 0.0, or 0%)
+    0,                  # position along the gradient's line (will be stored as 0.0, or 0%)
+    RGBA.new(255, 0, 0) # color
   )
   ```
 
