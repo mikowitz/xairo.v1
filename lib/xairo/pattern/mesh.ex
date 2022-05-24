@@ -226,4 +226,25 @@ defmodule Xairo.Pattern.Mesh do
     with {:ok, color} <- Xairo.Native.mesh_corner_color(mesh.pattern, patch_num, corner),
          do: color
   end
+
+  @doc """
+    Returns the number of complete patches in the mesh.
+
+    If cairo cannot calculate the number of patches, returns an error.
+  """
+  @spec patch_count(__MODULE__.t()) :: integer() | Xairo.error()
+  def patch_count(%__MODULE__{} = mesh) do
+    with {:ok, count} <- Xairo.Native.mesh_patch_count(mesh.pattern), do: count
+  end
+
+  @doc """
+    Returns the path, as a `Xairo.Path` struct, of the given patch index.
+
+    If no patch exists at the given index for the mesh, returns an error.
+  """
+  @spec path(__MODULE__.t(), integer()) :: Xairo.Path.t() | Xairo.error()
+  def path(%__MODULE__{} = mesh, patch_num) do
+    with {:ok, path} <- Xairo.Native.mesh_path(mesh.pattern, patch_num),
+         do: Xairo.Path.new(path)
+  end
 end

@@ -1,5 +1,6 @@
 use crate::color::Rgba;
 use crate::error::Error;
+use crate::path::{PathArc, XairoPath};
 use crate::shapes::Point;
 use crate::xairo_image::{ImageArc, ImageResult};
 use cairo::MeshCorner;
@@ -96,6 +97,23 @@ fn mesh_corner_color(mesh: MeshArc, patch_num: usize, corner: usize) -> Result<R
     } else {
         Err(Error::CornerColorError(corner, patch_num))
     }
+}
+
+#[rustler::nif]
+fn mesh_patch_count(mesh: MeshArc) -> Result<usize, Error> {
+    match mesh.mesh.patch_count() {
+        Ok(count) => Ok(count),
+        Err(_) => Err(Error::PatchCount)
+    }
+}
+
+#[rustler::nif]
+fn mesh_path(mesh: MeshArc, patch_num: usize) -> Result<PathArc, Error> {
+    match mesh.mesh.path(patch_num) {
+        Ok(path) => Ok(ResourceArc::new(XairoPath { path })),
+        Err(_) => Err(Error::MeshPath(patch_num))
+    }
+
 }
 
 #[rustler::nif]

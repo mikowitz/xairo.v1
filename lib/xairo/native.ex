@@ -98,6 +98,8 @@ defmodule Xairo.Native do
   def mesh_control_point(_m, _p, _c), do: error()
   def mesh_set_corner_color(_m, _c, _rgb), do: error()
   def mesh_corner_color(_m, _p, _c), do: error()
+  def mesh_patch_count(_m), do: error()
+  def mesh_path(_m, _p), do: error()
 
   defp error, do: :erlang.nif_error(:nif_not_loaded)
 end

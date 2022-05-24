@@ -70,6 +70,8 @@ rustler::init!(
         mesh::mesh_set_corner_color,
         mesh::mesh_control_point,
         mesh::mesh_corner_color,
+        mesh::mesh_patch_count,
+        mesh::mesh_path,
         text::set_font_size,
         text::show_text,
         text::text_extents,
