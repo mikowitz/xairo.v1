@@ -59,49 +59,32 @@ defmodule Xairo.Pattern.LinearGradient do
 
   alias Xairo.{Point, RGBA}
 
-  defstruct [:start_point, :stop_point, :color_stops]
+  defstruct [:pattern]
 
   @type t :: %__MODULE__{
-          start_point: Point.t(),
-          stop_point: Point.t(),
-          color_stops: [Xairo.Pattern.color_stop()]
+          pattern: reference()
         }
 
   @doc """
   Creates a new `t:Xairo.Pattern.LinearGradient.t/0`
 
   Takes two required arguments representing the start and stop ends of the gradient,
-  either `t:Xairo.Point.t/0` structs or coordinate tuple pairs. A third, optional
-  argument adds color stops along the gradient path. These can be added later on
-  by calling `add_color_stop/3`.
+  either `t:Xairo.Point.t/0` structs or coordinate tuple pairs.
 
   A gradient with no color stops results in a completely transparent color source.
 
   A gradient with a single color stop set, no matter where on the
   path, will result in a solid color source
 
-  ## Examples
-
-  A new vertical gradient with no color stops
-
-      iex> LinearGradient.new({0, 0}, {0, 100})
-      #LinearGradient<(0.0, 0.0), (0.0, 100.0), 0>
-
-  A diagonal gradient that starts at red and ends at blue
-
-      iex> red = RGBA.new(1, 0, 0)
-      iex> blue = RGBA.new(0, 0, 1)
-      iex> LinearGradient.new({0, 0}, {100, 100}, [{red, 0}, {blue, 1}])
-      #LinearGradient<(0.0, 0.0), (100.0, 100.0), 2>
-
   """
-  @spec new(Xairo.point(), Xairo.point(), Xairo.or_nil([Xairo.Pattern.color_stop()])) ::
-          __MODULE__.t()
-  def new(start_point, stop_point, color_stops \\ []) do
+  @spec new(Xairo.point(), Xairo.point()) :: __MODULE__.t()
+  def new(start_point, stop_point) do
     %__MODULE__{
-      start_point: Point.from(start_point),
-      stop_point: Point.from(stop_point),
-      color_stops: color_stops
+      pattern:
+        Xairo.Native.linear_gradient_new(
+          Point.from(start_point),
+          Point.from(stop_point)
+        )
     }
   end
 
@@ -120,42 +103,42 @@ defmodule Xairo.Pattern.LinearGradient do
       iex> red = RGBA.new(1, 0, 0)
       iex> blue = RGBA.new(0, 0, 1)
       iex> LinearGradient.new({0, 0}, {100, 0})
-      ...> |> LinearGradient.add_color_stop(blue, 0)
-      ...> |> LinearGradient.add_color_stop(red, 0.75)
-      #LinearGradient<(0.0, 0.0), (100.0, 0.0), 2>
+      ...> |> LinearGradient.add_color_stop(0, blue)
+      ...> |> LinearGradient.add_color_stop(0.75, red)
 
   """
-  @spec add_color_stop(__MODULE__.t(), RGBA.t(), number()) :: __MODULE__.t()
-  def add_color_stop(
-        %__MODULE__{} = gradient,
-        %RGBA{} = color,
-        position
-      )
-      when is_number(position) do
-    %__MODULE__{
-      gradient
-      | color_stops: [{color, position} | gradient.color_stops]
-    }
+  @spec add_color_stop(__MODULE__.t(), number(), RGBA.t()) :: __MODULE__.t()
+  def add_color_stop(%__MODULE__{} = gradient, offset, %RGBA{} = color) do
+    Xairo.Native.linear_gradient_add_color_stop(gradient.pattern, offset / 1, color)
+    gradient
   end
 
-  defimpl Inspect do
-    import Inspect.Algebra
+  @doc """
+    Returns the number of color stops set for the gradient.
+  """
+  @spec color_stop_count(__MODULE__.t()) :: integer() | Xairo.error()
+  def color_stop_count(%__MODULE__{} = gradient) do
+    with {:ok, count} <- Xairo.Native.linear_gradient_color_stop_count(gradient.pattern),
+         do: count
+  end
 
-    def inspect(gradient, _opts) do
-      concat([
-        "#LinearGradient<",
-        [
-          inspect_point(gradient.start_point),
-          inspect_point(gradient.stop_point),
-          length(gradient.color_stops)
-        ]
-        |> Enum.join(", "),
-        ">"
-      ])
-    end
+  @doc """
+    Returns the color stop for the gradient at the given index.
 
-    defp inspect_point(%Point{x: x, y: y}) do
-      "(#{x}, #{y})"
-    end
+    If no color stop exists at the given index, returns an error.
+  """
+  @spec color_stop(__MODULE__.t(), integer) :: RGBA.t() | Xairo.error()
+  def color_stop(%__MODULE__{} = gradient, index) do
+    with {:ok, color} <- Xairo.Native.linear_gradient_color_stop(gradient.pattern, index),
+         do: color
+  end
+
+  @doc """
+    Returns the start and stop points for the gradient.
+  """
+  @spec linear_points(__MODULE__.t()) :: {Point.t(), Point.t()} | Xairo.error()
+  def linear_points(%__MODULE__{} = gradient) do
+    with {:ok, points} <- Xairo.Native.linear_gradient_linear_points(gradient.pattern),
+         do: points
   end
 end

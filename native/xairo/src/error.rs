@@ -37,6 +37,12 @@ pub enum Error {
     PatchCount,
     #[error("No patch found at index {0}")]
     MeshPath(usize),
+    #[error("Unable to retrieve color stop count for linear gradient")]
+    ColorStopCount,
+    #[error("No color stop found at index {0}")]
+    ColorStop(isize),
+    #[error("Error retrieving linear points for gradient")]
+    LinearPoints,
 }
 
 impl rustler::Encoder for Error {

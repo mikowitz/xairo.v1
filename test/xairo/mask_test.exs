@@ -9,8 +9,8 @@ defmodule Xairo.MaskTest do
   setup do
     linear =
       LinearGradient.new({10, 10}, {90, 90})
-      |> LinearGradient.add_color_stop(RGBA.new(1, 0, 0), 0.25)
-      |> LinearGradient.add_color_stop(RGBA.new(0.5, 0.5, 1), 0.95)
+      |> LinearGradient.add_color_stop(0.25, RGBA.new(1, 0, 0))
+      |> LinearGradient.add_color_stop(0.95, RGBA.new(0.5, 0.5, 1))
 
     image =
       Xairo.new_image("mask_testing.png", 100, 100)
@@ -33,8 +33,8 @@ defmodule Xairo.MaskTest do
   test "masking with a linear gradient", %{image: image} do
     mask =
       LinearGradient.new({90, 10}, {0, 95})
-      |> LinearGradient.add_color_stop(RGBA.new(0, 0, 0, 1), 0.0)
-      |> LinearGradient.add_color_stop(RGBA.new(0, 0, 0, 0), 0.8)
+      |> LinearGradient.add_color_stop(0.0, RGBA.new(0, 0, 0, 1))
+      |> LinearGradient.add_color_stop(0.8, RGBA.new(0, 0, 0, 0))
 
     image
     |> Xairo.mask(mask)
