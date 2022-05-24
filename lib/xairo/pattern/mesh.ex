@@ -97,6 +97,9 @@ defmodule Xairo.Pattern.Mesh do
           pattern: reference()
         }
 
+  @doc """
+    Initialize a new mesh.
+  """
   @spec new() :: __MODULE__.t()
   def new do
     %__MODULE__{
@@ -104,30 +107,60 @@ defmodule Xairo.Pattern.Mesh do
     }
   end
 
+  @doc """
+    Starts a new patch (layer) of the mesh pattern.
+
+    A mesh can have any number of patches. When the mesh
+    is used as a source, the patches are rendered in order
+    from bottom up, so the most recently defined patch is on
+    top.
+  """
   @spec begin_patch(__MODULE__.t()) :: __MODULE__.t()
   def begin_patch(%__MODULE__{} = mesh) do
     Xairo.Native.mesh_begin_patch(mesh.pattern)
     mesh
   end
 
+  @doc """
+    Marks the completion of a patch for the mesh.
+
+    For a mesh pattern to be considered valid, it must have matched
+    pairs of `begin_patch/1` and `end_patch/1`.
+  """
   @spec end_patch(__MODULE__.t()) :: __MODULE__.t()
   def end_patch(%__MODULE__{} = mesh) do
     Xairo.Native.mesh_end_patch(mesh.pattern)
     mesh
   end
 
+  @doc """
+    Defines the first point of the current patch for the mesh pattern.
+
+    This should only be called directly after calling `begin_patch/1`. Once
+    the initial point is set, the subsequent points will be defined via
+    calls to `line_to/2` or `curve_to/2`.
+
+  """
   @spec move_to(__MODULE__.t(), Xairo.point()) :: __MODULE__.t()
   def move_to(%__MODULE__{} = mesh, point) do
     Xairo.Native.mesh_move_to(mesh.pattern, Point.from(point))
     mesh
   end
 
+  @doc """
+    Creates a side of the current patch defined by a straight line from
+    the current point to the prowided point.
+  """
   @spec line_to(__MODULE__.t(), Xairo.point()) :: __MODULE__.t()
   def line_to(%__MODULE__{} = mesh, point) do
     Xairo.Native.mesh_line_to(mesh.pattern, Point.from(point))
     mesh
   end
 
+  @doc """
+    Creates a side of the current patch defined by a Bézier curve
+    calculated from the current point and the three provided points.
+  """
   @spec curve_to(__MODULE__.t(), Xairo.point(), Xairo.point(), Xairo.point()) :: __MODULE__.t()
   def curve_to(%__MODULE__{} = mesh, point1, point2, point3) do
     Xairo.Native.mesh_curve_to(
@@ -140,6 +173,13 @@ defmodule Xairo.Pattern.Mesh do
     mesh
   end
 
+  @doc """
+    Sets the control point for the given corner of the current patch.
+
+    When mesh patch sides are defined, default values for the control
+    points are calculated, but this function can be used to overwrite
+    those defaults to affect how the colors of the mesh are blended.
+  """
   @spec set_control_point(__MODULE__.t(), integer(), Xairo.point()) :: __MODULE__.t()
   def set_control_point(%__MODULE__{} = mesh, corner, point) do
     Xairo.Native.mesh_set_control_point(
@@ -151,12 +191,20 @@ defmodule Xairo.Pattern.Mesh do
     mesh
   end
 
+  @doc """
+    Returns the control point on the mesh for the given patch and corner.
+
+    If there is no patch at the given index, returns an error.
+  """
   @spec control_point(__MODULE__.t(), integer(), integer()) :: Point.t() | Xairo.error()
   def control_point(%__MODULE__{} = mesh, patch_num, corner) do
     with {:ok, point} <- Xairo.Native.mesh_control_point(mesh.pattern, patch_num, corner),
          do: point
   end
 
+  @doc """
+    Sets the color for the given corner of the current patch.
+  """
   @spec set_corner_color(__MODULE__.t(), integer(), RGBA.t()) :: __MODULE__.t()
   def set_corner_color(%__MODULE__{} = mesh, corner, color) do
     Xairo.Native.mesh_set_corner_color(
@@ -166,5 +214,16 @@ defmodule Xairo.Pattern.Mesh do
     )
 
     mesh
+  end
+
+  @doc """
+    Returns the color on the mesh for the given patch and corner.
+
+    If there is no patch at the given index, returns an error.
+  """
+  @spec corner_color(__MODULE__.t(), integer(), integer()) :: RGBA.t() | Xairo.error()
+  def corner_color(%__MODULE__{} = mesh, patch_num, corner) do
+    with {:ok, color} <- Xairo.Native.mesh_corner_color(mesh.pattern, patch_num, corner),
+         do: color
   end
 end

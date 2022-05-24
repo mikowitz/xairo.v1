@@ -82,6 +82,23 @@ fn mesh_set_corner_color(mesh: MeshArc, index: usize, rgba: Rgba) -> MeshArc {
 }
 
 #[rustler::nif]
+fn mesh_corner_color(mesh: MeshArc, patch_num: usize, corner: usize) -> Result<Rgba, Error> {
+    if let Some(mesh_corner) = mesh_corner(corner) {
+        match mesh.mesh.corner_color_rgba(patch_num, mesh_corner) {
+            Ok((red, green, blue, alpha)) => Ok(Rgba {
+                red,
+                green,
+                blue,
+                alpha,
+            }),
+            Err(_) => Err(Error::CornerColorError(corner, patch_num)),
+        }
+    } else {
+        Err(Error::CornerColorError(corner, patch_num))
+    }
+}
+
+#[rustler::nif]
 fn set_mesh_source(image: ImageArc, mesh: MeshArc) -> ImageResult {
     match image.context.set_source(&mesh.mesh) {
         Ok(_) => Ok(image),

@@ -31,6 +31,8 @@ pub enum Error {
     MaskError,
     #[error("No control point set for corner {0} of patch {1}")]
     ControlPointError(usize, usize),
+    #[error("No color set for corner {0} of patch {1}")]
+    CornerColorError(usize, usize),
 }
 
 impl rustler::Encoder for Error {
