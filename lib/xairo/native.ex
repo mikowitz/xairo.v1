@@ -107,5 +107,11 @@ defmodule Xairo.Native do
   def linear_gradient_color_stop(_g, _i), do: error()
   def linear_gradient_linear_points(_g), do: error()
 
+  def radial_gradient_new(_p1, _r1, _p2, _r2), do: error()
+  def radial_gradient_add_color_stop(_g, _o, _c), do: error()
+  def radial_gradient_color_stop_count(_g), do: error()
+  def radial_gradient_color_stop(_g, _i), do: error()
+  def radial_gradient_radial_circles(_g), do: error()
+
   defp error, do: :erlang.nif_error(:nif_not_loaded)
 end

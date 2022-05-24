@@ -27,8 +27,8 @@ defmodule Xairo.Pattern.RadialGradient do
 
   ```
   gradient = RadialGradient.add_color_stop(
+    0,                   # position along the gradient's radius (will be stored as 0.0, or 0%)
     RGBA.new(0.5, 0, 1), # color
-    0                    # position along the gradient's radius (will be stored as 0.0, or 0%)
   )
   ```
 
@@ -36,8 +36,8 @@ defmodule Xairo.Pattern.RadialGradient do
 
   ```
   gradient = RadialGradient.add_color_stop(
-    RGBA.new(0, 0, 1), # color
-    1                  # position along the gradient's radius (will be stored as 1.0, or 100%)
+    1,                # position along the gradient's radius (will be stored as 1.0, or 100%)
+    RGBA.new(0, 0, 1) # color
   )
   ```
 
@@ -58,17 +58,11 @@ defmodule Xairo.Pattern.RadialGradient do
 
   alias Xairo.{Point, RGBA}
 
-  defstruct [
-    :first_circle,
-    :second_circle,
-    :color_stops
-  ]
+  defstruct [:pattern]
 
-  @type radial :: {Point.t(), number()}
+  @type radial_circle :: {Point.t(), number()}
   @type t :: %__MODULE__{
-          first_circle: radial(),
-          second_circle: radial(),
-          color_stops: [Xairo.Pattern.color_stop()]
+          pattern: reference()
         }
 
   @doc """
@@ -81,9 +75,6 @@ defmodule Xairo.Pattern.RadialGradient do
   - center of the second cirlce, a `t:Xairo.Point.t/0` or coordinate tuple pair
   - radius of the second circle, a number
 
-  A fifth, optional argument adds color stops along the gradient path. These
-  can be added later on by calling `add_color_stop/3`.
-
   A gradient with no color stops results in a completely transparent color source.
 
   A gradient with a single color stop set, no matter where on the
@@ -94,31 +85,34 @@ defmodule Xairo.Pattern.RadialGradient do
   A new gradient centered on a 100x100 image with no color stops
 
       iex> RadialGradient.new({50, 50}, 10, {50, 50}, 80)
-      #RadialGradient<{(50.0, 50.0), 10.0}, {(50.0, 50.0), 80.0}, 0>
 
   A gradient that starts at red in the upper left and ends at blue in the
   lower right.
 
       iex> red = RGBA.new(1, 0, 0)
       iex> blue = RGBA.new(0, 0, 1)
-      iex> RadialGradient.new({0, 0}, 10, {0, 0}, 100, [{red, 0}, {blue, 1}])
-      #RadialGradient<{(0.0, 0.0), 10.0}, {(0.0, 0.0), 100.0}, 2>
+      iex> RadialGradient.new({0, 0}, 10, {0, 0}, 100)
+      ...> |> RadialGradient.add_color_stop(0, red)
+      ...> |> RadialGradient.add_color_stop(1, blue)
 
   """
   @spec new(
           Xairo.point(),
           number(),
           Xairo.point(),
-          number(),
-          Xairo.or_nil([Xairo.Pattern.color_stop()])
+          number()
         ) :: __MODULE__.t()
 
-  def new(first_center, first_radius, second_center, second_radius, color_stops \\ [])
+  def new(first_center, first_radius, second_center, second_radius)
       when is_number(first_radius) and is_number(second_radius) do
     %__MODULE__{
-      first_circle: {Point.from(first_center), first_radius * 1.0},
-      second_circle: {Point.from(second_center), second_radius * 1.0},
-      color_stops: color_stops
+      pattern:
+        Xairo.Native.radial_gradient_new(
+          Point.from(first_center),
+          first_radius / 1,
+          Point.from(second_center),
+          second_radius / 1
+        )
     }
   end
 
@@ -137,46 +131,48 @@ defmodule Xairo.Pattern.RadialGradient do
       iex> red = RGBA.new(1, 0, 0)
       iex> blue = RGBA.new(0, 0, 1)
       iex> RadialGradient.new({50, 50}, 10, {50, 50}, 80)
-      ...> |> RadialGradient.add_color_stop(blue, 0)
-      ...> |> RadialGradient.add_color_stop(red, 0.75)
-      #RadialGradient<{(50.0, 50.0), 10.0}, {(50.0, 50.0), 80.0}, 2>
+      ...> |> RadialGradient.add_color_stop(0, blue)
+      ...> |> RadialGradient.add_color_stop(0.75, red)
 
   """
-  @spec add_color_stop(__MODULE__.t(), RGBA.t(), number()) :: __MODULE__.t()
+  @spec add_color_stop(__MODULE__.t(), number(), RGBA.t()) :: __MODULE__.t()
   def add_color_stop(
-        %__MODULE__{} = gradient,
-        %RGBA{} = color,
-        position
-      )
-      when is_number(position) do
-    %__MODULE__{
-      gradient
-      | color_stops: [{color, position} | gradient.color_stops]
-    }
+        %__MODULE__{pattern: pattern} = gradient,
+        position,
+        %RGBA{} = color
+      ) do
+    Xairo.Native.radial_gradient_add_color_stop(pattern, position / 1, color)
+    gradient
   end
 
-  defimpl Inspect do
-    import Inspect.Algebra
+  @doc """
+    Returns the number of color stops set for the gradient.
+  """
+  @spec color_stop_count(__MODULE__.t()) :: integer | Xairo.error()
+  def color_stop_count(%__MODULE__{pattern: pattern}) do
+    with {:ok, count} <- Xairo.Native.radial_gradient_color_stop_count(pattern),
+         do: count
+  end
 
-    def inspect(gradient, _opts) do
-      concat([
-        "#RadialGradient<",
-        [
-          inspect_circle(gradient.first_circle),
-          inspect_circle(gradient.second_circle),
-          length(gradient.color_stops)
-        ]
-        |> Enum.join(", "),
-        ">"
-      ])
-    end
+  @doc """
+    Returns the color stop for the gradient at the given index.
 
-    defp inspect_circle({point, radius}) do
-      "{#{inspect_point(point)}, #{radius}}"
-    end
+    If no color stop exists at the given index, returns an error.
+  """
+  @spec color_stop(__MODULE__.t(), integer()) :: RGBA.t() | Xairo.error()
+  def color_stop(%__MODULE__{pattern: pattern}, index) do
+    with {:ok, color} <- Xairo.Native.radial_gradient_color_stop(pattern, index),
+         do: color
+  end
 
-    defp inspect_point(%Point{x: x, y: y}) do
-      "(#{x}, #{y})"
-    end
+  @doc """
+    Returns the two radial circles that define the gradient.
+
+    These are represented by tuples of a `Xairo.Point` struct and a radius.
+  """
+  @spec radial_circles(__MODULE__.t()) :: {radial_circle(), radial_circle()} | Xairo.error()
+  def radial_circles(%__MODULE__{pattern: pattern}) do
+    with {:ok, circles} <- Xairo.Native.radial_gradient_radial_circles(pattern),
+         do: circles
   end
 end

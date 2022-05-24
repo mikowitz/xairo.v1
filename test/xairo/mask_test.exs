@@ -22,8 +22,8 @@ defmodule Xairo.MaskTest do
   test "masking with a radial gradient", %{image: image} do
     mask =
       RadialGradient.new({50, 50}, 0, {50, 50}, 50)
-      |> RadialGradient.add_color_stop(RGBA.new(0, 0, 0, 1), 0.0)
-      |> RadialGradient.add_color_stop(RGBA.new(0, 0, 0, 0), 1.0)
+      |> RadialGradient.add_color_stop(0, RGBA.new(0, 0, 0, 1))
+      |> RadialGradient.add_color_stop(1, RGBA.new(0, 0, 0, 0))
 
     image
     |> Xairo.mask(mask)
