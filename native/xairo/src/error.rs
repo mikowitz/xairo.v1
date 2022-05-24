@@ -33,6 +33,10 @@ pub enum Error {
     ControlPointError(usize, usize),
     #[error("No color set for corner {0} of patch {1}")]
     CornerColorError(usize, usize),
+    #[error("Unable to retrieve patch count for mesh")]
+    PatchCount,
+    #[error("No patch found at index {0}")]
+    MeshPath(usize),
 }
 
 impl rustler::Encoder for Error {

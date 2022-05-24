@@ -26,3 +26,5 @@ xairo-*.tar
 /tmp/
 
 /priv/plts/
+
+.envrc
