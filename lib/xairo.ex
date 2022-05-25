@@ -248,7 +248,7 @@ defmodule Xairo do
     Vector
   }
 
-  alias Pattern.{LinearGradient, Mesh, RadialGradient}
+  alias Pattern.{LinearGradient, Mesh, RadialGradient, Solid}
 
   @doc """
   Creates and returns a new `Xairo.Image` struct
@@ -739,6 +739,11 @@ defmodule Xairo do
     image
   end
 
+  def set_source(%{resource: _} = image, %Solid{} = pattern) do
+    Native.set_solid_pattern_source(image.resource, pattern.pattern)
+    image
+  end
+
   @doc """
   Sets the font size for the context.
 
@@ -969,6 +974,11 @@ defmodule Xairo do
 
   def mask(%{resource: _} = image, %Mesh{} = mesh) do
     with {:ok, _} <- Xairo.Native.set_mesh_mask(image.resource, mesh.pattern), do: image
+  end
+
+  def mask(%{resource: _} = image, %Solid{} = pattern) do
+    with {:ok, _} <- Xairo.Native.set_solid_pattern_mask(image.resource, pattern.pattern),
+         do: image
   end
 
   @doc """

@@ -44,7 +44,7 @@ defmodule Xairo.Pattern.RadialGradient do
   Then we can use that gradient as the color source via
 
   ```
-  Xairo.set_color_source(image, gradient)
+  Xairo.set_source(image, gradient)
   ```
 
   and any subsequent paths drawn will pull their color at every point

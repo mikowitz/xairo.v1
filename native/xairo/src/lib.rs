@@ -18,6 +18,8 @@ use path::XairoPath;
 mod radial_gradient;
 use radial_gradient::XairoRadialGradient;
 mod shapes;
+mod solid_pattern;
+use solid_pattern::XairoSolidPattern;
 mod text;
 mod transformations;
 mod xairo_image;
@@ -93,6 +95,11 @@ rustler::init!(
         mesh::mesh_corner_color,
         mesh::mesh_patch_count,
         mesh::mesh_path,
+        // solid pattern
+        solid_pattern::solid_pattern_from_rgba,
+        solid_pattern::solid_pattern_color,
+        solid_pattern::set_solid_pattern_source,
+        solid_pattern::set_solid_pattern_mask,
         // text
         text::set_font_size,
         text::show_text,
@@ -136,5 +143,6 @@ fn on_load(env: Env, _info: Term) -> bool {
     rustler::resource!(XairoMesh, env);
     rustler::resource!(XairoLinearGradient, env);
     rustler::resource!(XairoRadialGradient, env);
+    rustler::resource!(XairoSolidPattern, env);
     true
 }
