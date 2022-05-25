@@ -45,6 +45,8 @@ pub enum Error {
     LinearPoints,
     #[error("Error retrieving radial circles for gradient")]
     RadialCircles,
+    #[error("Error retrieving color for solid pattern")]
+    SolidPatternColor,
 }
 
 impl rustler::Encoder for Error {

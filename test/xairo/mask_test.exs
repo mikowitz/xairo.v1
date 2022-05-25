@@ -2,7 +2,7 @@ defmodule Xairo.MaskTest do
   use ExUnit.Case, async: true
   import Xairo.Helpers.ImageHelpers
 
-  alias Xairo.{Pattern.LinearGradient, Pattern.Mesh, Pattern.RadialGradient, RGBA}
+  alias Xairo.{Pattern.LinearGradient, Pattern.Mesh, Pattern.RadialGradient, Pattern.Solid, RGBA}
 
   alias Xairo.Mask
 
@@ -59,6 +59,14 @@ defmodule Xairo.MaskTest do
     image
     |> Xairo.mask(mask)
     |> assert_image("masked_mesh.png")
+  end
+
+  test "masking with a solid pattern", %{image: image} do
+    mask = Solid.new(RGBA.new(1, 0, 0, 0.3))
+
+    image
+    |> Xairo.mask(mask)
+    |> assert_image("masked_solid.png")
   end
 
   test "masking with a surface", %{image: image} do

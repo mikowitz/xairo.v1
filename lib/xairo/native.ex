@@ -15,6 +15,7 @@ defmodule Xairo.Native do
   def set_radial_gradient_mask(_i, _g), do: error()
   def set_linear_gradient_mask(_i, _g), do: error()
   def set_mesh_mask(_i, _m), do: error()
+  def set_solid_pattern_mask(_i, _m), do: error()
   def mask_surface(_i, _m, _p), do: error()
 
   def move_to(_i, _p), do: error()
@@ -49,6 +50,7 @@ defmodule Xairo.Native do
   def set_linear_gradient_source(_i, _lg), do: error()
   def set_radial_gradient_source(_i, _rg), do: error()
   def set_mesh_source(_i, _m), do: error()
+  def set_solid_pattern_source(_i, _sp), do: error()
 
   def set_font_size(_i, _s), do: error()
   def show_text(_i, _str), do: error()
@@ -112,6 +114,9 @@ defmodule Xairo.Native do
   def radial_gradient_color_stop_count(_g), do: error()
   def radial_gradient_color_stop(_g, _i), do: error()
   def radial_gradient_radial_circles(_g), do: error()
+
+  def solid_pattern_from_rgba(_c), do: error()
+  def solid_pattern_color(_p), do: error()
 
   defp error, do: :erlang.nif_error(:nif_not_loaded)
 end
