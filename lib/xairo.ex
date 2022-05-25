@@ -248,7 +248,7 @@ defmodule Xairo do
     Vector
   }
 
-  alias Pattern.{LinearGradient, Mesh, RadialGradient, Solid}
+  alias Pattern.{LinearGradient, Mesh, RadialGradient, Solid, Surface}
 
   @doc """
   Creates and returns a new `Xairo.Image` struct
@@ -741,6 +741,11 @@ defmodule Xairo do
 
   def set_source(%{resource: _} = image, %Solid{} = pattern) do
     Native.set_solid_pattern_source(image.resource, pattern.pattern)
+    image
+  end
+
+  def set_source(%{resource: _} = image, %Surface{} = pattern) do
+    Native.set_surface_pattern_source(image.resource, pattern.resource)
     image
   end
 

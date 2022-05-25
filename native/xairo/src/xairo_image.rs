@@ -185,6 +185,20 @@ pub fn mask_surface(image: ImageArc, mask: ImageArc, point: Point) -> ImageResul
     }
 }
 
+#[rustler::nif]
+fn set_surface_pattern_source(image: ImageArc, surface: ImageArc) -> ImageResult {
+    if let XairoSurface::Image(source_surface) = &surface.surface {
+        let surface_pattern = cairo::SurfacePattern::create(&source_surface);
+        surface_pattern.set_matrix(surface.context.matrix());
+        match image.context.set_source(&surface_pattern) {
+            Ok(_) => Ok(image),
+            Err(_) => Err(Error::SurfaceSource),
+        }
+    } else {
+        Err(Error::SurfaceSource)
+    }
+}
+
 fn match_svg_unit(unit: SvgUnit) -> cairo::SvgUnit {
     match unit {
         SvgUnit::Em => cairo::SvgUnit::Em,
