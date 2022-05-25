@@ -36,6 +36,7 @@ rustler::init!(
         xairo_image::save_image,
         xairo_image::set_document_unit,
         xairo_image::mask_surface,
+        xairo_image::set_surface_pattern_source,
         // extents
         extents::extents,
         // drawing

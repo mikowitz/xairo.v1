@@ -27,6 +27,8 @@ pub enum Error {
     UninvertibleMatrix,
     #[error("Could not copy path")]
     CopyPath,
+    #[error("Could not set surface as source")]
+    SurfaceSource,
     #[error("Could not apply pattern as mask")]
     MaskError,
     #[error("No control point set for corner {0} of patch {1}")]
