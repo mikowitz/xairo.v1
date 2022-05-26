@@ -127,6 +127,21 @@ defmodule Xairo.Native do
   def image_surface_stride(_is), do: error()
   def image_surface_write_to_png(_is, _f), do: error()
 
+  def context_new_from_image_surface(_is), do: error()
+  def context_status(_c), do: error()
+  def context_set_source_rgb(_c, _r, _g, _b), do: error()
+  def context_set_source_rgba(_c, _r, _g, _b, _a), do: error()
+  def context_stroke(_c), do: error()
+  def context_stroke_preserve(_c), do: error()
+  def context_fill(_c), do: error()
+  def context_fill_preserve(_c), do: error()
+  def context_paint(_c), do: error()
+  def context_paint_with_alpha(_c, _a), do: error()
+  def context_move_to(_c, _x, _y), do: error()
+  def context_line_to(_c, _x, _y), do: error()
+  def context_rectangle(_c, _x, _y, _w, _h), do: error()
+  def context_close_path(_c), do: error()
+
   def stride_for_width(_f, _w), do: error()
 
   defp error, do: :erlang.nif_error(:nif_not_loaded)

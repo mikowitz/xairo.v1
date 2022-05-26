@@ -3,6 +3,8 @@ extern crate rustler_codegen;
 use rustler::{Env, Term};
 
 mod color;
+mod context;
+use context::ContextRaw;
 mod drawing;
 mod enums;
 mod error;
@@ -144,6 +146,16 @@ rustler::init!(
         image_surface::image_surface_height,
         image_surface::image_surface_stride,
         image_surface::image_surface_write_to_png,
+        // context
+        context::context_new_from_image_surface,
+        context::context_status,
+        context::context_set_source_rgb,
+        context::context_paint,
+        context::context_fill,
+        context::context_stroke,
+        context::context_move_to,
+        context::context_line_to,
+        context::context_close_path,
         // enums
         enums::stride_for_width,
     ],
@@ -158,5 +170,6 @@ fn on_load(env: Env, _info: Term) -> bool {
     rustler::resource!(XairoRadialGradient, env);
     rustler::resource!(XairoSolidPattern, env);
     rustler::resource!(ImageSurfaceRaw, env);
+    rustler::resource!(ContextRaw, env);
     true
 }

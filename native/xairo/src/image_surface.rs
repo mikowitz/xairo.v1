@@ -12,6 +12,7 @@ unsafe impl Sync for ImageSurfaceRaw {}
 
 pub type ImageSurface = ResourceArc<ImageSurfaceRaw>;
 
+
 #[rustler::nif]
 fn image_surface_create(
     format: Format,
