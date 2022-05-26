@@ -120,5 +120,14 @@ defmodule Xairo.Native do
 
   def set_surface_pattern_source(_i, _p), do: error()
 
+  def image_surface_create(_f, _w, _h), do: error()
+  def image_surface_format(_is), do: error()
+  def image_surface_width(_is), do: error()
+  def image_surface_height(_is), do: error()
+  def image_surface_stride(_is), do: error()
+  def image_surface_write_to_png(_is, _f), do: error()
+
+  def stride_for_width(_f, _w), do: error()
+
   defp error, do: :erlang.nif_error(:nif_not_loaded)
 end

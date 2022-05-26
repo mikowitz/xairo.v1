@@ -4,8 +4,11 @@ use rustler::{Env, Term};
 
 mod color;
 mod drawing;
+mod enums;
 mod error;
 mod extents;
+mod image_surface;
+use image_surface::ImageSurfaceRaw;
 mod line_cap;
 mod line_join;
 mod linear_gradient;
@@ -133,7 +136,16 @@ rustler::init!(
         path::copy_path_flat,
         path::append_path,
         path::get_tolerance,
-        path::set_tolerance
+        path::set_tolerance,
+        // image_surface
+        image_surface::image_surface_create,
+        image_surface::image_surface_format,
+        image_surface::image_surface_width,
+        image_surface::image_surface_height,
+        image_surface::image_surface_stride,
+        image_surface::image_surface_write_to_png,
+        // enums
+        enums::stride_for_width,
     ],
     load = on_load
 );
@@ -145,5 +157,6 @@ fn on_load(env: Env, _info: Term) -> bool {
     rustler::resource!(XairoLinearGradient, env);
     rustler::resource!(XairoRadialGradient, env);
     rustler::resource!(XairoSolidPattern, env);
+    rustler::resource!(ImageSurfaceRaw, env);
     true
 }
