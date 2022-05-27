@@ -42,13 +42,13 @@ defmodule Xairo.ContextTest do
       |> Context.close_path()
       |> Context.fill()
 
-      ImageSurface.write_to_png(surface, "basic_lines.png")
+      ImageSurface.write_to_png(surface, "basic_drawing1.png")
 
-      assert File.exists?("basic_lines.png")
+      assert File.exists?("basic_drawing1.png")
 
-      assert hash("basic_lines.png") == hash("test/images/basic_lines.png")
+      assert hash("basic_drawing1.png") == hash("test/images/basic_drawing1.png")
 
-      :ok = File.rm("basic_lines.png")
+      :ok = File.rm("basic_drawing1.png")
     end
 
     test "set_source_rgba, fill_preserve, stroke_preserve, paint_with_alpha, rectangle", %{
@@ -73,6 +73,50 @@ defmodule Xairo.ContextTest do
       assert hash("basic_drawing2.png") == hash("test/images/basic_drawing2.png")
 
       :ok = File.rm("basic_drawing2.png")
+    end
+
+    test "arc, arc_negative, curve, new_sub_path", %{context: ctx, surface: sfc} do
+      ctx
+      |> Context.set_source_rgb(1, 1, 1)
+      |> Context.paint()
+      |> Context.set_source_rgb(0, 0, 1)
+      |> Context.move_to(10, 10)
+      |> Context.curve_to(20, 20, 50, 30, 30, 80)
+      |> Context.arc(60, 40, 10, 0, 3.1)
+      |> Context.new_sub_path()
+      |> Context.arc_negative(70, 80, 20, 0, 3.1)
+      |> Context.stroke()
+
+      ImageSurface.write_to_png(sfc, "basic_drawing3.png")
+
+      assert File.exists?("basic_drawing3.png")
+
+      assert hash("basic_drawing3.png") == hash("test/images/basic_drawing3.png")
+
+      :ok = File.rm("basic_drawing3.png")
+    end
+
+    test "new_path, rel_line_to, rel_move_to, rel_curve_to", %{context: ctx, surface: sfc} do
+      ctx
+      |> Context.set_source_rgb(1, 1, 1)
+      |> Context.paint()
+      |> Context.set_source_rgb(0.5, 0.5, 1)
+      |> Context.move_to(10, 10)
+      |> Context.rel_line_to(30, 30)
+      |> Context.new_path()
+      |> Context.move_to(10, 15)
+      |> Context.rel_line_to(20, 25)
+      |> Context.rel_move_to(30, 25)
+      |> Context.rel_curve_to(10, 15, 20, -20, 30, 20)
+      |> Context.stroke()
+
+      ImageSurface.write_to_png(sfc, "basic_drawing4.png")
+
+      assert File.exists?("basic_drawing4.png")
+
+      assert hash("basic_drawing4.png") == hash("test/images/basic_drawing4.png")
+
+      :ok = File.rm("basic_drawing4.png")
     end
   end
 end

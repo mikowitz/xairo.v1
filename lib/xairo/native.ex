@@ -139,8 +139,16 @@ defmodule Xairo.Native do
   def context_paint_with_alpha(_c, _a), do: error()
   def context_move_to(_c, _x, _y), do: error()
   def context_line_to(_c, _x, _y), do: error()
+  def context_rel_move_to(_c, _x, _y), do: error()
+  def context_rel_line_to(_c, _x, _y), do: error()
   def context_rectangle(_c, _x, _y, _w, _h), do: error()
   def context_close_path(_c), do: error()
+  def context_curve_to(_c, _x1, _y1, _x2, _y2, _x3, _y3), do: error()
+  def context_rel_curve_to(_c, _x1, _y1, _x2, _y2, _x3, _y3), do: error()
+  def context_arc(_c, _x, _y, _r, _a1, _a2), do: error()
+  def context_arc_negative(_c, _x, _y, _r, _a1, _a2), do: error()
+  def context_new_path(_c), do: error()
+  def context_new_sub_path(_c), do: error()
 
   def stride_for_width(_f, _w), do: error()
 
