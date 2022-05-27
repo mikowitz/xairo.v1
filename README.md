@@ -1,5 +1,8 @@
 # Xairo
 
+> This project has gotten away from me a bit in terms of scope, implementation, and approach. I'm leaving it for anyone who's found it and used it, but I will be re-working this project from the ground up at https://github.com/mikowitz/xairo. Thanks for your understanding.
+
+
 Elixir API for the [cairo](https://cairographics.org) 2d graphics library.
 
 It uses [Rust bindings for cairo](https://docs.rs/cairo-rs/0.14.9/cairo/) and the [Rustler](https://github.com/rusterlium/rustler) package to provide the NIF bridge to Elixir.
