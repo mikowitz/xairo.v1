@@ -39,7 +39,7 @@ defmodule Xairo.Helpers.ImageHelpers do
     :ok = File.rm(filename)
   end
 
-  defp hash(file) do
+  def hash(file) do
     File.stream!(file)
     |> Enum.reduce(:crypto.hash_init(:sha256), fn line, acc ->
       :crypto.hash_update(acc, line)
