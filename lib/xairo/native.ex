@@ -120,5 +120,37 @@ defmodule Xairo.Native do
 
   def set_surface_pattern_source(_i, _p), do: error()
 
+  def image_surface_create(_f, _w, _h), do: error()
+  def image_surface_format(_is), do: error()
+  def image_surface_width(_is), do: error()
+  def image_surface_height(_is), do: error()
+  def image_surface_stride(_is), do: error()
+  def image_surface_write_to_png(_is, _f), do: error()
+
+  def context_new_from_image_surface(_is), do: error()
+  def context_status(_c), do: error()
+  def context_set_source_rgb(_c, _r, _g, _b), do: error()
+  def context_set_source_rgba(_c, _r, _g, _b, _a), do: error()
+  def context_stroke(_c), do: error()
+  def context_stroke_preserve(_c), do: error()
+  def context_fill(_c), do: error()
+  def context_fill_preserve(_c), do: error()
+  def context_paint(_c), do: error()
+  def context_paint_with_alpha(_c, _a), do: error()
+  def context_move_to(_c, _x, _y), do: error()
+  def context_line_to(_c, _x, _y), do: error()
+  def context_rel_move_to(_c, _x, _y), do: error()
+  def context_rel_line_to(_c, _x, _y), do: error()
+  def context_rectangle(_c, _x, _y, _w, _h), do: error()
+  def context_close_path(_c), do: error()
+  def context_curve_to(_c, _x1, _y1, _x2, _y2, _x3, _y3), do: error()
+  def context_rel_curve_to(_c, _x1, _y1, _x2, _y2, _x3, _y3), do: error()
+  def context_arc(_c, _x, _y, _r, _a1, _a2), do: error()
+  def context_arc_negative(_c, _x, _y, _r, _a1, _a2), do: error()
+  def context_new_path(_c), do: error()
+  def context_new_sub_path(_c), do: error()
+
+  def stride_for_width(_f, _w), do: error()
+
   defp error, do: :erlang.nif_error(:nif_not_loaded)
 end

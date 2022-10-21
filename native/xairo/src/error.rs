@@ -56,3 +56,33 @@ impl rustler::Encoder for Error {
         format!("{}", self).encode(env)
     }
 }
+
+#[derive(Copy, Clone, Debug, NifUnitEnum)]
+pub enum XairoError {
+    WriteError,
+    InvalidSize,
+    InvalidStride,
+    UnknownError,
+}
+
+impl From<XairoError> for cairo::Error {
+    fn from(error: XairoError) -> Self {
+        match error {
+            XairoError::InvalidStride => cairo::Error::InvalidStride,
+            XairoError::InvalidSize => cairo::Error::InvalidSize,
+            XairoError::WriteError => cairo::Error::WriteError,
+            XairoError::UnknownError => cairo::Error::LastStatus,
+        }
+    }
+}
+
+impl From<cairo::Error> for XairoError {
+    fn from(error: cairo::Error) -> Self {
+        match error {
+            cairo::Error::InvalidStride => XairoError::InvalidStride,
+            cairo::Error::InvalidSize => XairoError::InvalidSize,
+            cairo::Error::WriteError => XairoError::WriteError,
+            _ => XairoError::UnknownError,
+        }
+    }
+}
