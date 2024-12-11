@@ -42,6 +42,16 @@ defmodule Xairo.Text.Extents do
           y_advance: number()
         }
 
+  @doc """
+  Returns the text exetnts of the given text in the context of the
+  image's configuration.
+  """
+  def for(text, %Xairo.Image{resource: resource}) do
+    with {:ok, extents} <- Xairo.Native.text_extents(resource, text) do
+      extents
+    end
+  end
+
   defimpl Inspect do
     import Inspect.Algebra
 
